@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Books - Library{% endblock %}
+
+{% block content %}
+<div class="books-container">
+    <h1>Our books</h1>
+    {% if books %}
+        <div class="books-grid">
+            {% for book in books %}
+                <div class="book-card">
+                    <h2>{{ book.title }}</h2>
+                    <p class="author">by {{ book.author.name }}</p>
+                    {% if book.co_authors.exists %}
+                        <p class="co-authors">
+                            Co-authors: 
+                            {% for co_author in book.co_authors.all %}
+                                {{ co_author.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                    <p class="book-details">
+                        <span class="category">{{ book.get_category_display }}</span>
+                        <span class="pages">{{ book.page_count }} pages</span>
+                    </p>
+                    <p class="price">${{ book.price }}</p>
+                    <div class="book-footer">
+                        <span class="availability {% if book.in_stock %}available{% else %}unavailable{% endif %}">
+                            {% if book.in_stock %}In stock{% else %}Out of stock{% endif %}
+                        </span>
+                        <span class="isbn">ISBN: {{ book.isbn }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-books">No books available at the moment.</p>
+    {% endif %}
+</div>
+{% endblock %} 

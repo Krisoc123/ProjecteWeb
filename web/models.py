@@ -1,10 +1,28 @@
 from django.db import models
+from django.contrib.auth.models import User as AuthUser
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+@receiver(post_save, sender=AuthUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        User.objects.create(
+            auth_user=instance,
+            name=instance.username,
+            email=instance.email
+        )
+
+@receiver(post_save, sender=AuthUser)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'custom_user'):
+        instance.custom_user.save()
+        
 class User(models.Model):
     userId = models.AutoField(primary_key=True)
+    auth_user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, related_name='custom_user', null=True)
     points = models.IntegerField(default=0)
-    ubication = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
+    ubication = models.CharField(max_length=255, default="not specified")
+    name = models.CharField(max_length=255, default="Anonymous")
     email = models.EmailField(unique=True)
     joined_date = models.DateTimeField(auto_now_add=True)
 
@@ -13,6 +31,7 @@ class User(models.Model):
 
 class Book(models.Model):
     ISBN = models.CharField(max_length=13, primary_key=True)  # ISBN com a identificador únic
+    title = models.CharField(max_length=255, default="Unknown")
     author = models.CharField(max_length=255)
     topic = models.CharField(max_length=255)
     publish_date = models.DateField()
