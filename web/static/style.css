@@ -157,3 +157,26 @@ footer {
 .button:hover {
     background-color: #2980b9;
 } 
+
+.book-cover {
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.book-cover img {
+    max-height: 180px;
+    max-width: 120px;
+    min-height: 100px; /* Asegura un tamaño mínimo */
+    min-width: 70px;  /* Asegura un ancho mínimo */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    object-fit: contain; /* Mantiene la proporción de la imagen */
+}
+.book-card {
+    display: flex;
+    flex-direction: column;
+    /* ...resto de tus estilos existentes... */
+}
