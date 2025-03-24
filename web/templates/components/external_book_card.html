@@ -1,0 +1,29 @@
+<div class="book-card external-book">
+    <!-- Cover image -->
+    <div class="book-cover">
+        {% if book.thumbnail_url %}
+            <img src="{{ book.thumbnail_url }}" alt="Cover of {{ book.title }}">
+        {% else %}
+            <img src="https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png" 
+                 alt="No cover available">
+        {% endif %}
+    </div>
+    
+    <h2>{{ book.title }}</h2>
+    <p class="author">by {{ book.author }}</p>
+    
+    {% if book.description %}
+        <p class="description">{{ book.description|truncatechars:100 }}</p>
+    {% endif %}
+    
+    <div class="book-footer">
+        <span class="source">Source: {{ book.source }}</span>
+        {% if book.isbn %}
+            <span class="isbn">ISBN: {{ book.isbn }}</span>
+        {% endif %}
+        
+        {% if book.external_link %}
+            <a href="{{ book.external_link }}" target="_blank" class="external-link">View details</a>
+        {% endif %}
+    </div>
+</div>

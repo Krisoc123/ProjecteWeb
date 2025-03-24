@@ -5,69 +5,117 @@
 {% block content %}
 <div class="books-container">
     <h1>Our books</h1>
-    {% if books %}
-        <div class="books-grid">
-            {% for book in books %}
-                <div class="book-card">
-                    <!-- Nueva sección de portada -->
-                    <div class="book-cover">
-                        <!-- Primera opción: Open Library -->
-                        <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
-                             alt="Cover of {{ book.title }}"
-                             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
-                             onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
-                    </div>
-                    
-                    <!-- Añadir este script al final de la página -->
-                    <script>
-                    function fetchGoogleBooksCover(imgElement, isbn) {
-                        // Primero consultar la API para obtener el ID
-                        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.items && data.items.length > 0) {
-                                    // Obtener el ID del primer resultado
-                                    const bookId = data.items[0].id;
-                                    // Cambiar la URL de la imagen con el ID correcto
-                                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
-                                } else {
-                                    // No hay resultados, usar imagen predeterminada
-                                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching Google Books data:', error);
-                                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                            });
-                    }
-                    </script>
-                    <!-- Contenido original -->
-                    <h2>{{ book.title }}</h2>
-                    <p class="author">by {{ book.author.name }}</p>
-                    {% if book.co_authors.exists %}
-                        <p class="co-authors">
-                            Co-authors: 
-                            {% for co_author in book.co_authors.all %}
-                                {{ co_author.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                    {% endif %}
-                    <p class="book-details">
-                        <span class="category">{{ book.get_category_display }}</span>
-                        <span class="pages">{{ book.page_count }} pages</span>
-                    </p>
-                    <p class="price">${{ book.price }}</p>
-                    <div class="book-footer">
-                        <span class="availability {% if book.in_stock %}available{% else %}unavailable{% endif %}">
-                            {% if book.in_stock %}In stock{% else %}Out of stock{% endif %}
-                        </span>
-                        <span class="isbn">ISBN: {{ book.isbn }}</span>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="no-books">No books available at the moment.</p>
-    {% endif %}
+    
+    <!-- Formulari de cerca -->
+    <div class="search-container">
+        <form method="GET" action="{% url 'books' %}" class="search-form">
+            <div class="search-group">
+                <input type="text" name="author" placeholder="Author name..." value="{{ request.GET.author }}">
+                <input type="text" name="title" placeholder="Book title..." value="{{ request.GET.title }}">
+                <select name="topic">
+                    <option value="">All topics</option>
+                    <option value="Fantasia" {% if request.GET.topic == "Fantasia" %}selected{% endif %}>Fantasia</option>
+                    <option value="Novel·la" {% if request.GET.topic == "Novel·la" %}selected{% endif %}>Novel·la</option>
+                    <option value="Distopia" {% if request.GET.topic == "Distopia" %}selected{% endif %}>Distopia</option>
+                </select>
+            </div>
+            <button type="submit" class="search-button">Search</button>
+            {% if request.GET.author or request.GET.title or request.GET.topic %}
+                <a href="{% url 'books' %}" class="clear-button">Clear filters</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Secció 1: Llibres locals -->
+    <section class="books-section local-books">
+        <h2>Books in our library</h2>
+        {% if books %}
+            <div class="books-grid">
+                {% for book in books %}
+                    {% include 'components/book_card.html' %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-books">No books found in our database with these filters.</p>
+        {% endif %}
+    </section>
+    
+    <!-- Secció 2: Llibres de les APIs -->
+    <section class="books-section external-books">
+        <h2>Books available elsewhere</h2>
+        {% if external_books %}
+            <div class="books-grid">
+                {% for book in external_books %}
+                    {% include 'components/external_book_card.html' %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-books">No additional books found online.</p>
+        {% endif %}
+    </section>
 </div>
-{% endblock %} 
+
+<style>
+    .search-container {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+    }
+    
+    .search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .search-group {
+        display: flex;
+        flex: 1;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .search-form input, .search-form select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        flex: 1;
+        min-width: 180px;
+    }
+    
+    .search-button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .clear-button {
+        padding: 10px 20px;
+        background-color: #f44336;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    
+    .books-section {
+        margin-bottom: 40px;
+    }
+    
+    .books-section h2 {
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .external-books {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
