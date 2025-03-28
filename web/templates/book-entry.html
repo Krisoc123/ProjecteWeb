@@ -1,10 +1,22 @@
 <!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block title %}Books - Library{% endblock %}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+
 </head>
 <body>
+    {% block content %}
+
+        <div class="book-info">
+        <h2>{{ mybook.title}}</h2>
+        <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
+             alt="Cover of {{ book.title }}"
+             sizes="(min-width: 600px) 200px, 50vw" />
+        </div>
+    {% endblock %}
 
 </body>
 </html>

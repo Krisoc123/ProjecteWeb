@@ -55,8 +55,12 @@ def profile_view(request):
     
     return render(request, 'profile.html', context)
 
-
 @login_required
 def books(request):
     books = Book.objects.all()
     return render(request, 'books.html', {'books': books})
+
+def book_entry(request,ISBN):
+    mybook = Book.objects.get(ISBN=ISBN)
+    return  render(request,'book-entry.html', {'mybook': mybook})
+
