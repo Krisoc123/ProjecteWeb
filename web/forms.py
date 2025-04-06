@@ -17,7 +17,7 @@ class CustomUserCreationForm(UserCreationForm):
         # No guardamos nada hasta que todas las validaciones hayan pasado
         # UserCreationForm ya valida las contraseñas
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        user.email = self.cleaned_data['email'] # Asignamos el email al usuario
         
         if commit:
             user.save()

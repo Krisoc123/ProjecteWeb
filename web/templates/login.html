@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}Iniciar Sesión - Biblioteca{% endblock %}
+{% block title %}Log in - Library{% endblock %}
 
 {% block content %}
 <div class="login-container">
-    <h1>Iniciar Sesión</h1>
+    <h1>Log in</h1>
     
-    <form method="post" class="login-form">
+    <form method="post" class="login-form"> <
         {% csrf_token %}
         
-        {% for field in form %}
+        {% for field in form %} <!-- Form: from the Django form
             <div class="form-group">
                 {{ field.label_tag }}
                 {{ field }}
@@ -30,9 +30,9 @@
             {% endfor %}
         {% endif %}
         
-        <button type="submit" class="submit-button">Iniciar Sesión</button>
+        <button type="submit" class="submit-button">Log in</button>
     </form>
     
-    <p class="register-link">¿No tienes una cuenta? <a href="{% url 'register' %}">Regístrate</a></p>
+    <p class="register-link">¿Still don't have an account? <a href="{% url 'register' %}">Create a new account</a></p>
 </div>
 {% endblock %}

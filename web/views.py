@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from .forms import CustomUserCreationForm, LoginForm
 from django.contrib.auth.decorators import login_required
-from .models import User, Book, Review, Tengo, Quiero, VendaDonacio, Intercanvi
+from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
 
 
 # Create your views here.
@@ -41,10 +41,11 @@ def register_view(request):
     return render(request, 'register.html', {'form': form})
 
 def login_view(request):
-    # Si el usuario ya está autenticado, redirigir al inicio
+    # If the user is already authenticated, redirect to home
     if request.user.is_authenticated:
         return redirect('home')
         
+    
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -54,10 +55,10 @@ def login_view(request):
             
             if user is not None:
                 login(request, user)
-                messages.success(request, f"Bienvenido de nuevo, {username}!")
+                messages.success(request, f"Wellcome back, {username}!")
                 return redirect('home')
             else:
-                messages.error(request, "Nombre de usuario o contraseña incorrectos.")
+                messages.error(request, "Invalid username or password. Please try again.")
     else:
         form = LoginForm()
     
@@ -75,10 +76,10 @@ def profile_view(request):
     )
     
     # Now use custom_user for your queries
-    tengo_list = Tengo.objects.filter(user=custom_user)
-    quiero_list = Quiero.objects.filter(user=custom_user)
-    intercanvis_list = Intercanvi.objects.filter(user1=custom_user)
-    ventas_list = VendaDonacio.objects.filter(user=custom_user)
+    tengo_list = Have.objects.filter(user=custom_user)
+    quiero_list = Want.objects.filter(user=custom_user)
+    intercanvis_list = Exchange.objects.filter(user1=custom_user)
+    ventas_list = SaleDonation.objects.filter(user=custom_user)
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {
