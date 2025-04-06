@@ -3,7 +3,7 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import User, Book, Review, Tengo, Quiero, VendaDonacio, Intercanvi
+from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
 
 
 # Create your views here.
@@ -37,19 +37,19 @@ def profile_view(request):
     )
     
     # Now use custom_user for your queries
-    tengo_list = Tengo.objects.filter(user=custom_user)
-    quiero_list = Quiero.objects.filter(user=custom_user)
-    intercanvis_list = Intercanvi.objects.filter(user1=custom_user)
-    ventas_list = VendaDonacio.objects.filter(user=custom_user)
+    have_list = Have.objects.filter(user=custom_user)
+    want_list = Want.objects.filter(user=custom_user)
+    exchanges_list = Exchange.objects.filter(user1=custom_user)
+    sales_list = SaleDonation.objects.filter(user=custom_user)
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {
         'django_user': request.user,
         'user': custom_user,
-        'tengo_list': tengo_list,
-        'quiero_list': quiero_list,
-        'intercanvis_list': intercanvis_list,
-        'ventas_list': ventas_list,
+        'have_list': have_list,
+        'want_list': want_list,
+        'exchanges_list': exchanges_list,
+        'sales_list': sales_list,
         'reviews_list': reviews_list,
     }
     
