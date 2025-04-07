@@ -76,17 +76,10 @@ def profile_view(request):
     )
     
     # Now use custom_user for your queries
-<<<<<<< HEAD
     have_list = Have.objects.filter(user=custom_user)
     want_list = Want.objects.filter(user=custom_user)
     exchanges_list = Exchange.objects.filter(user1=custom_user)
     sales_list = SaleDonation.objects.filter(user=custom_user)
-=======
-    tengo_list = Have.objects.filter(user=custom_user)
-    quiero_list = Want.objects.filter(user=custom_user)
-    intercanvis_list = Exchange.objects.filter(user1=custom_user)
-    ventas_list = SaleDonation.objects.filter(user=custom_user)
->>>>>>> login
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {

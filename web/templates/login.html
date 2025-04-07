@@ -6,10 +6,10 @@
 <div class="login-container">
     <h1>Log in</h1>
     
-    <form method="post" class="login-form"> <
+    <form method="post" class="login-form">
         {% csrf_token %}
         
-        {% for field in form %} <!-- Form: from the Django form
+        {% for field in form %}
             <div class="form-group">
                 {{ field.label_tag }}
                 {{ field }}
@@ -33,6 +33,6 @@
         <button type="submit" class="submit-button">Log in</button>
     </form>
     
-    <p class="register-link">¿Still don't have an account? <a href="{% url 'register' %}">Create a new account</a></p>
+    <p class="register-link">Don't have an account? <a href="{% url 'register' %}">Create a new account</a></p>
 </div>
 {% endblock %}
