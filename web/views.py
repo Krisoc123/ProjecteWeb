@@ -99,3 +99,7 @@ def profile_view(request):
 def books(request):
     books = Book.objects.all()
     return render(request, 'books.html', {'books': books})
+
+
+def trending_view(request):
+    return render(request, 'trending.html')

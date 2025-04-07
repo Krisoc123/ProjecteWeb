@@ -318,3 +318,56 @@ footer {
     flex-direction: column;
     /* ...resto de tus estilos existentes... */
 }
+.trending-books {
+    padding: 30px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    margin: 30px auto;
+    text-align: center;
+}
+
+.trending-books h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.book-card {
+    display: inline-block;
+    width: 220px;
+    margin: 15px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
+    vertical-align: top;
+}
+
+.book-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.book-card h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+}
+
+.book-card p {
+    margin: 0 0 10px;
+    color: #666;
+}
+
+.book-card button {
+    padding: 8px 14px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.book-card button:hover {
+    background-color: #0056b3;
+}
