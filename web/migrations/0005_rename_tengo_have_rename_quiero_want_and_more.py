@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web', '0004_user_auth_user'),
+        ('web', '0001_initial'),
     ]
 
     operations = [
