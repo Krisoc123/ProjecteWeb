@@ -8,4 +8,6 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),  # Vista de registro personalizada
     path('books/', views.books, name='books'),
     path('accounts/profile/', views.profile_view, name='profile'),
+
+    path('trending/', views.trending_view, name='trending'),
 ]

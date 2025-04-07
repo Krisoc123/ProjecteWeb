@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="trending-books">
+    <h2>Popular Books</h2>
+
+    <div class="book-card">
+        <img src="{% static 'img/libro1.jpg' %}" alt="Libro 1">
+        <h3>El Alquimista</h3>
+        <p>de Paulo Coelho</p>
+        <button>Exchange</button>
+    </div>
+
+    <div class="book-card">
+        <img src="{% static 'img/libro2.jpg' %}" alt="Libro 2">
+        <h3>1984</h3>
+        <p>de George Orwell</p>
+        <button>Exchange</button>
+    </div>
+
+    <div class="book-card">
+        <img src="{% static 'img/libro3.jpg' %}" alt="Libro 3">
+        <h3>Cien Años de Soledad</h3>
+        <p>de Gabriel García Márquez</p>
+        <button>Exchange</button>
+    </div>
+</div>
+{% endblock %}
