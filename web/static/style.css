@@ -54,58 +54,161 @@ main {
 
 /* Login form */
 .login-container {
-    max-width: 400px;
+    max-width: 500px;
     margin: 2rem auto;
     padding: 2rem;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.login-container h1 {
+.login-form {
+    margin-top: 1rem;
+}
+
+.form-group {
     margin-bottom: 1.5rem;
-    color: #2c3e50;
-    text-align: center;
+    position: relative;
 }
 
-.login-form .form-group {
-    margin-bottom: 1rem;
-}
-
-.login-form label {
+.form-group label {
     display: block;
     margin-bottom: 0.5rem;
     color: #2c3e50;
+    font-weight: 500;
 }
 
-.login-form input {
+.form-group input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
+    transition: border-color 0.2s;
 }
 
-.login-form button {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #3fdb34;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.form-group input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-.login-form button:hover {
-    background-color: #2980b9;
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #7f8c8d;
 }
 
 .error-message {
     color: #e74c3c;
-    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 0.85rem;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 1rem;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}
+
+.login-link {
     text-align: center;
+    margin-top: 1.5rem;
+    color: #7f8c8d;
+}
+
+.login-link a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Register form */
+.register-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.register-form {
+    margin-top: 1rem;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #7f8c8d;
+}
+
+.register-link a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para mensajes flash */
+.messages-container {
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+}
+
+.messages {
+    list-style: none;
+    padding: 0;
+}
+
+.messages li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.messages .success {
+    background-color: #d5f5e3;
+    color: #27ae60;
+    border-left: 4px solid #27ae60;
+}
+
+.messages .error {
+    background-color: #f8d7da;
+    color: #c0392b;
+    border-left: 4px solid #c0392b;
+}
+
+.messages .info {
+    background-color: #d6eaf8;
+    color: #2980b9;
+    border-left: 4px solid #2980b9;
+}
+
+.user-greeting {
+    margin-left: 1rem;
+    color: #7f8c8d;
+    font-weight: 500;
 }
 
 /* Footer */
