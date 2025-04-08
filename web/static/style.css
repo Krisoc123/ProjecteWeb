@@ -55,57 +55,195 @@ main {
 /* Login form */
 .login-container {
     max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
+    margin: 3rem auto;
+    padding: 2.5rem;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.login-container h1 {
-    margin-bottom: 1.5rem;
-    color: #2c3e50;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-.login-form .form-group {
-    margin-bottom: 1rem;
+.login-container h1 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
 }
 
-.login-form label {
+.login-form {
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+    text-align: left;
+}
+
+.form-group label {
     display: block;
     margin-bottom: 0.5rem;
     color: #2c3e50;
+    font-weight: 500;
+    font-size: 0.95rem;
 }
 
-.login-form input {
+.form-group input {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.85rem 1rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 1rem;
+    transition: all 0.2s ease;
 }
 
-.login-form button {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #3fdb34;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+.form-group input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
-.login-form button:hover {
-    background-color: #2980b9;
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #7f8c8d;
 }
 
 .error-message {
     color: #e74c3c;
-    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 0.9rem;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    margin-top: 1rem;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}
+
+.submit-button:active {
+    transform: translateY(1px);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
     text-align: center;
+    margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #eee;
+}
+
+.divider span {
+    padding: 0 1rem;
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #7f8c8d;
+}
+
+.login-link a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Register form */
+.register-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.register-form {
+    margin-top: 1rem;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 0.5rem;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+
+.register-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Estilos para mensajes flash */
+.messages-container {
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+}
+
+.messages {
+    list-style: none;
+    padding: 0;
+}
+
+.messages li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.messages .success {
+    background-color: #d5f5e3;
+    color: #27ae60;
+    border-left: 4px solid #27ae60;
+}
+
+.messages .error {
+    background-color: #f8d7da;
+    color: #c0392b;
+    border-left: 4px solid #c0392b;
+}
+
+.messages .info {
+    background-color: #d6eaf8;
+    color: #2980b9;
+    border-left: 4px solid #2980b9;
+}
+
+.user-greeting {
+    margin-left: 1rem;
+    color: #7f8c8d;
+    font-weight: 500;
 }
 
 /* Footer */
@@ -179,4 +317,57 @@ footer {
     display: flex;
     flex-direction: column;
     /* ...resto de tus estilos existentes... */
+}
+.trending-books {
+    padding: 30px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    margin: 30px auto;
+    text-align: center;
+}
+
+.trending-books h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.book-card {
+    display: inline-block;
+    width: 220px;
+    margin: 15px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
+    vertical-align: top;
+}
+
+.book-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.book-card h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+}
+
+.book-card p {
+    margin: 0 0 10px;
+    color: #666;
+}
+
+.book-card button {
+    padding: 8px 14px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.book-card button:hover {
+    background-color: #0056b3;
 }
