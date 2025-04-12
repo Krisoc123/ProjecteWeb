@@ -262,3 +262,7 @@ sqlitebrowser ~/university/web_project/our_project/ProjecteWeb/db.sqlite3
 
 INSERT INTO web_book (ISBN, title, author, topic, publish_date, base_price) 
 VALUES ('9780747532743', 'Harry Potter i la Pedra Filosofal', 'J.K. Rowling', 'Fantasia', '1997-06-26', 500);
+
+---
+tail -n +2 README.md > readme_for_pdf.md
+pandoc metadata.yaml README.md -o ProjecteIntercanviLlibres.pdf --pdf-engine=xelatex --from="markdown+autolink_bare_uris"

@@ -6,10 +6,11 @@
 <div class="login-container">
     <h1>Log in</h1>
     
-    <form method="post" class="login-form"> <
-        {% csrf_token %}
+    <form method="post" class="login-form">
+        {% csrf_token %}    <!-- CSRF token: Django's security measure -->
         
-        {% for field in form %} <!-- Form: from the Django form
+    
+        {% for field in form %} <!-- Form: from the Django form -->
             <div class="form-group">
                 {{ field.label_tag }}
                 {{ field }}

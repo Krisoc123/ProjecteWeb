@@ -20,13 +20,14 @@ toccolor: blue
 links-as-notes: false
 breaklinks: false
 toc: true
+from: markdown+autolink_bare-uris
 toc-depth: 3
 numbersections: false
 header-includes: |
   \usepackage{fancyhdr}
   \pagestyle{fancy}
   \fancyhead[L]{Projecte d'Intercanvi de Llibres}
-  \fancyhead[R]{Enginyeria Web}
+  \fancyhead[R]{Projecte Web}
   \fancyfoot[C]{\thepage}
   \usepackage{hyperref}
   \hypersetup{

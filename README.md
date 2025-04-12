@@ -1,4 +1,7 @@
 # Projecte d'Intercanvi de Llibres
+## 0. Enllaç al Repositori
+
+`https://github.com/Krisoc123/ProjecteWeb.git`
 
 ## 1. Descripció del Projecte
 Aquest projecte implementa una aplicació web utilitzant Django que permet als usuaris intercanviar, vendre o donar llibres entre ells mitjançant un sistema de punts.
@@ -8,7 +11,9 @@ Aquest projecte implementa una aplicació web utilitzant Django que permet als u
 El model de dades consisteix en les següents entitats i relacions:
 
 ### Entitats Principals
+
 Declarades en `models.py`:
+
 1. **User** (Usuari)
    - Estén el model d'usuari de Django (AbstractUser)
    - Incorpora gestió d'autenticació nativa de Django
@@ -49,6 +54,7 @@ Declarades en `models.py`:
    - Inclou llibres intercanviats, ubicació i estat de la transacció
 
 Respecte al diagrama original s'ha respectat.
+
 ### Diagrama de Relacions
 
 ```
@@ -120,6 +126,8 @@ docker-compose exec web python manage.py createsuperuser
 
 Es podrà accedir al tauler d'administració amb les credencials del superusuari creat al navegador web a la URL `http://localhost:8000/admin/`.
 
+![](https://i.imgur.com/9YghUUE.png)
+
 
 
 ## 4. Sistema d'Autenticació i Registre
@@ -151,6 +159,8 @@ S'ha implementat un sistema d'autenticació basat estenent el sistema d'usuari d
 
 > Utilitzar com  base els formularis de Django per a la creació d'usuaris i autenticació ens ha permès aprofitar les funcionalitats de validació i no haver-les de implementar manualment.
 
+![](https://i.imgur.com/Qh6fEpM.png)
+
 ## 5. Configuració de Docker
 
 El projecte s'ha configurat per funcionar en un entorn containeritzat utilitzant Docker, de manera que es pot desplegar fàcilment en qualsevol màquina amb Docker instal·lat. 
@@ -161,6 +171,7 @@ L'entorn Docker consta principalment d'un contenidor web que executa l'aplicaci�
 
 1. **Contenidor web**: Basat en Python, amb totes les dependències necessàries per executar l'aplicació Django
 2. **Base de dades**: Actualment utilitzem SQLite (inclosa dins del contenidor web)
+
    > *Nota: De moment no s'ha implementat una base de dades externa com PostgreSQL, depenent de les necessitats futures del projecte ja es valorarà si és necessari fer-ho.*
 
 ### Arxius de configuració
@@ -168,7 +179,9 @@ L'entorn Docker consta principalment d'un contenidor web que executa l'aplicaci�
 El projecte inclou els següents arxius de configuració de Docker:
 
 - **Dockerfile**: Defineix la imatge base, instal·la dependències i configura l'entorn d'execució
-- **docker-compose.yml**: Orquestra els serveis, defineix els volums per persistència de dades i configura les variables d'entorn
+- **docker-compose.yml**: Orquestra els serveis, defineix els volums per persistència de dades i configura les variables d'entorn 
+
+> *Nota: De moment només s'ha creat un servei, el de l'aplicació web, i no s'ha implementat un servei de base de dades externa com PostgreSQL.*
 
 ### Volums i persistència
 
