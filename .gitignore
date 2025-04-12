@@ -1,18 +1,24 @@
-# Python bytecode files
-*.pyc
+# Python bytecode / cache files
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
 # Django stuff
 *.log
+local_settings.py
 db.sqlite3
 db.sqlite3-journal
+media/
 
-# Virtual environment
-venv/
+# Environments
+.env
+.venv
 env/
+venv/
 ENV/
+env.bak/
+venv.bak/
 
 # IDE specific files
 .idea/

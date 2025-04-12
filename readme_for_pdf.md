@@ -1,4 +1,3 @@
-# Projecte d'Intercanvi de Llibres
 ## 0. Enllaç al Repositori
 
 `https://github.com/Krisoc123/ProjecteWeb.git`

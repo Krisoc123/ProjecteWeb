@@ -7,7 +7,7 @@ from .models import User as CustomUser
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     location = forms.CharField(required=False, max_length=255)
-    
+    """ class Meta: is used to define the model and fields for the form """
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2')
