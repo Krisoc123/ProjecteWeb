@@ -48,7 +48,7 @@ Declarades en `models.py`:
    - Registra intercanvis de llibres entre dos usuaris
    - Inclou llibres intercanviats, ubicació i estat de la transacció
 
-Respecte al diagrama original s'ha respectat.
+
 ### Diagrama de Relacions
 
 ```
@@ -102,10 +102,7 @@ El tauler d'administració permet:
    - Organització jeràrquica per dates en els models que ho requereixen
 
 
-**Accés al Tauler d'Administració**
-
-
-
+#### Accés al Tauler d'Administració
 L'administració està disponible a la URL `/admin/` i requereix credencials de superusuari. Es pot crear un superusuari mitjançant:
 
 ```bash
@@ -161,7 +158,7 @@ L'entorn Docker consta principalment d'un contenidor web que executa l'aplicaci�
 
 1. **Contenidor web**: Basat en Python, amb totes les dependències necessàries per executar l'aplicació Django
 2. **Base de dades**: Actualment utilitzem SQLite (inclosa dins del contenidor web)
-   > *Nota: De moment no s'ha implementat una base de dades externa com PostgreSQL, depenent de les necessitats futures del projecte ja es valorarà si és necessari fer-ho.*
+   > *Nota: Per a un desplegament de producció, seria recomanable migrar a PostgreSQL o un altre SGBD més robust*
 
 ### Arxius de configuració
 
@@ -206,12 +203,10 @@ Per executar l'aplicació en un entorn local:
    docker-compose exec web python manage.py createsuperuser
    ```
 
-**Accés a l'aplicació**
+### Accés a l'aplicació
 
 Un cop en funcionament, l'aplicació estarà disponible a:
-
 - **Aplicació web**: http://localhost:8000
-
 - **Interfície d'administració**: http://localhost:8000/admin
 
 
@@ -250,3 +245,20 @@ El projecte intenta cumplir la guia dels 12 factors, a continuació se'n fa un r
 
 
 
+---
+
+
+# Descargar la portada usando curl con la opción -L para seguir redirecciones
+curl -L -o portada.jpg "https://covers.openlibrary.org/b/isbn/9780747532743-L.jpg"
+
+
+curl -L -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" -o portada.jpg "https://books.google.com/books/content?id=ISBN:9780747532743&printsec=frontcover&img=1&zoom=2"
+
+
+
+sqlitebrowser ~/university/web_project/our_project/ProjecteWeb/db.sqlite3
+
+### add book register (manual sql)
+
+INSERT INTO web_book (ISBN, title, author, topic, publish_date, base_price) 
+VALUES ('9780747532743', 'Harry Potter i la Pedra Filosofal', 'J.K. Rowling', 'Fantasia', '1997-06-26', 500);

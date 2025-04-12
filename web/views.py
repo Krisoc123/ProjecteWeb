@@ -16,7 +16,7 @@ def home(request):
 
 def logout_view(request):
     auth_logout(request)
-    messages.info(request, "Has cerrado sesión correctamente.")
+    messages.info(request, "Successfully logged out.")
     return redirect('home')
 
 def register_view(request):
@@ -32,11 +32,11 @@ def register_view(request):
             user = form.save()
             # Inicia sesión automáticamente tras el registro
             login(request, user)
-            messages.success(request, "Registro completado con éxito.")
+            messages.success(request, "Registration successful! You are now logged in.")
             return redirect('home')
         else:
             # Si el formulario no es válido, se mostrarán los errores en la plantilla
-            messages.error(request, "Hay errores en el formulario. Por favor, revísalo.")
+            messages.error(request, "Please correct the errors below.")
     else:
         form = CustomUserCreationForm()
     
@@ -47,7 +47,7 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
         
-    
+    # If the request is a POST means the user is trying to log in
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -61,6 +61,7 @@ def login_view(request):
                 return redirect('home')
             else:
                 messages.error(request, "Invalid username or password. Please try again.")
+    # If the request is a GET, we just show the login form
     else:
         form = LoginForm()
     

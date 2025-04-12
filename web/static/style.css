@@ -160,6 +160,7 @@ main {
     color: #7f8c8d;
 }
 
+/* .register-link a means that the class register-link has a link inside */
 .register-link a {
     color: #3498db;
     text-decoration: none;
@@ -180,13 +181,16 @@ main {
     padding: 0;
 }
 
-.messages li {
+/* li means list item */
+.messages li {  
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
     border-radius: 4px;
     font-size: 0.95rem;
 }
 
+
+/* .something1 .something2 means that the class something2 is inside the class something1 */
 .messages .success {
     background-color: #d5f5e3;
     color: #27ae60;
@@ -241,6 +245,8 @@ footer {
     margin-bottom: 2rem;
 }
 
+
+/* User actions */
 .user-actions, .guest-actions {
     display: flex;
     gap: 1rem;

@@ -1,4 +1,3 @@
-# Projecte d'Intercanvi de Llibres
 
 ## 1. Descripció del Projecte
 Aquest projecte implementa una aplicació web utilitzant Django que permet als usuaris intercanviar, vendre o donar llibres entre ells mitjançant un sistema de punts.
