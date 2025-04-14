@@ -153,3 +153,6 @@ def books(request):
     }
     
     return render(request, 'books.html', context)
+    
+def trending_view(request):
+    return render(request, 'trending.html')
