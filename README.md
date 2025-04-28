@@ -29,7 +29,6 @@ Declarades en `models.py`:
 
 3. **Review** (Ressenya)
    - Permet als usuaris opinar sobre els llibres
-   - Cada usuari només pot fer una ressenya per llibre
    - Té com a claus forana `user` (usuari que fa la ressenya) i `book` (llibre ressenyat)
 
 ### Relacions entre Entitats
@@ -43,7 +42,6 @@ Declarades en `models.py`:
    - Utilitza claus foranes per referenciar llibres i usuaris (`models.ForeignKey`)
    - Indica quins llibres desitja cada usuari
    - Inclou un camp de prioritat
-   - Restricció: Un usuari no pot voler el mateix llibre més d'una vegada
 
 3. **SaleDonation** (VendaDonació)
    - Registra la venda o donació d'un llibre d'un usuari
@@ -105,7 +103,7 @@ El tauler d'administració permet:
 4. **Funcionalitats generals**:
    - Filtres per camps rellevants a cada model
    - Camps de cerca per facilitar la localització ràpida d'entitats
-   - Organització jeràrquica per dates en els models que ho requereixen
+ 
 
 
 **Accés al Tauler d'Administració**
