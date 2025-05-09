@@ -11,6 +11,9 @@ urlpatterns = [
     path('accounts/profile/', views.profile_view, name='profile'),
     path('trending/', views.trending_view, name='trending'),
     path('books/<ISBN>/', views.book_entry ,name='book-entry'),
+    path('wishlist/', views.wishlist_view ,name='wishlist'),
+    path('shelve/', views.shelve_view ,name='shelve'),
+    path('book-trade/<ISBN>', views.book_trade_view ,name='book-trade'),
 
 
 ]

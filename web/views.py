@@ -161,3 +161,12 @@ def book_entry(request,ISBN):
     mybook = Book.objects.get(ISBN=ISBN)
     return  render(request,'book-entry.html', {'mybook': mybook})
 
+def shelve_view(request):
+    return render(request, 'shelve.html')
+
+def wishlist_view(request):
+    return render(request, 'wishlist.html')
+
+def book_trade_view(request, ISBN):
+    mybook = Book.objects.get(ISBN=ISBN)
+    return render(request, 'book-trade.html')
