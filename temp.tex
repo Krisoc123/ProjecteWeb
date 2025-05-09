@@ -1,0 +1,497 @@
+\hypertarget{projecte-dintercanvi-de-llibres}{%
+\section{Projecte d'Intercanvi de
+Llibres}\label{projecte-dintercanvi-de-llibres}}
+
+\hypertarget{descripciuxf3-del-projecte}{%
+\subsection{1. Descripció del
+Projecte}\label{descripciuxf3-del-projecte}}
+
+Aquest projecte implementa una aplicació web utilitzant Django que
+permet als usuaris intercanviar, vendre o donar llibres entre ells
+mitjançant un sistema de punts.
+
+\hypertarget{model-relacional}{%
+\subsection{2. Model Relacional}\label{model-relacional}}
+
+El model de dades consisteix en les següents entitats i relacions:
+
+\hypertarget{entitats-principals}{%
+\subsubsection{Entitats Principals}\label{entitats-principals}}
+
+Declarades en \texttt{models.py}: 1. \textbf{User} (Usuari) - Estén el
+model d'usuari de Django (AbstractUser) - Incorpora gestió
+d'autenticació nativa de Django - Camps addicionals: - \texttt{points}:
+Punts disponibles per a transaccions - \texttt{location}: Ubicació de
+l'usuari - \texttt{joined\_date}: Data de registre
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  \textbf{Book} (Llibre)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Identificat per ISBN (clau primària)
+  \item
+    Inclou informació bibliogràfica com títol, autor, tema
+  \item
+    Preu base en punts
+  \end{itemize}
+\item
+  \textbf{Review} (Ressenya)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Permet als usuaris opinar sobre els llibres
+  \item
+    Cada usuari només pot fer una ressenya per llibre
+  \item
+    Té com a claus forana \texttt{user} (usuari que fa la ressenya) i
+    \texttt{book} (llibre ressenyat)
+  \end{itemize}
+\end{enumerate}
+
+\hypertarget{relacions-entre-entitats}{%
+\subsubsection{Relacions entre
+Entitats}\label{relacions-entre-entitats}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Have} (Tenir)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Relació molts-a-molts entre User i Book
+  \item
+    Indica quins llibres té cada usuari disponibles per intercanvi/venda
+  \end{itemize}
+\item
+  \textbf{Want} (Voler)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Relació molts-a-molts entre User i Book
+  \item
+    Utilitza claus foranes per referenciar llibres i usuaris
+    (\texttt{models.ForeignKey})
+  \item
+    Indica quins llibres desitja cada usuari
+  \item
+    Inclou un camp de prioritat
+  \item
+    Restricció: Un usuari no pot voler el mateix llibre més d'una vegada
+  \end{itemize}
+\item
+  \textbf{SaleDonation} (VendaDonació)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Registra la venda o donació d'un llibre d'un usuari
+  \item
+    Inclou preu en punts, ubicació i estat de la transacció
+  \end{itemize}
+\item
+  \textbf{Exchange} (Intercanvi)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Registra intercanvis de llibres entre dos usuaris
+  \item
+    Inclou llibres intercanviats, ubicació i estat de la transacció
+  \end{itemize}
+\end{enumerate}
+
+Respecte al diagrama original s'ha respectat. \#\#\# Diagrama de
+Relacions
+
+\begin{verbatim}
+User 1---* Review *---1 Book
+User 1---* Have *---1 Book
+User 1---* Want *---1 Book
+User 1---* SaleDonation *---1 Book
+User(User1) 1---* Exchange *---1 User(User2)
+Exchange *---1 Book(Book1)
+Exchange *---1 Book(Book2)
+\end{verbatim}
+
+\includegraphics{https://i.imgur.com/enuaXcb.png}
+
+Les relacions estan dissenyades per poder-se referenciar mitjançant
+claus foranes, i inclouen camps \texttt{related\_name} per facilitar les
+consultes en ambdues direccions.
+
+\begin{quote}
+Tot i que encara no s'ha implementat, s'ha decidit que només es guardarà
+a la base de dades pròpia de l'aplicació els llibres que els usuaris
+hagin intercanviat, venut, donat, volgut o valorat. La resta de llibres
+i la seva informació es consultaran a través d'API externes.
+\end{quote}
+
+\hypertarget{tauler-dadministraciuxf3}{%
+\subsection{3. Tauler d'Administració}\label{tauler-dadministraciuxf3}}
+
+S'ha creat i activat un tauler d'administració per gestionar les
+entitats del sistema. El tauler permet als administradors gestionar
+usuaris, llibres, ressenyes i transaccions, a més s'han implementat
+filtres i funcionalitats de cerca per facilitar la gestió de les dades.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Activació del tauler}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    S'ha activat el mòdul d'administració incloent
+    \texttt{django.contrib.admin} a \texttt{INSTALLED\_APPS} al fitxer
+    \texttt{settings.py}
+  \item
+    S'ha registrat al fitxer \texttt{urls.py} principal amb la ruta
+    \texttt{/admin/}
+  \end{itemize}
+\item
+  \textbf{Personalització dels models}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    S'ha creat un fitxer \texttt{admin.py} a l'aplicació web on es
+    registren i configuren tots els models
+  \item
+    Cada model disposa d'una classe Admin específica que hereta de
+    \texttt{admin.ModelAdmin}
+  \end{itemize}
+\end{enumerate}
+
+El tauler d'administració permet:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Gestió d'Usuaris}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Classe personalitzada \texttt{CustomUserAdmin} que estén
+    \texttt{UserAdmin}
+  \item
+    Visualització i edició dels camps estàndards i personalitzats
+    (punts, ubicació, data d'inscripció)
+  \item
+    Filtres
+  \end{itemize}
+\item
+  \textbf{Gestió de Llibres}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Visualització i edició de tots els detalls bibliogràfics
+  \item
+    Filtres per tema i data de publicació
+  \item
+    Cerca per ISBN, títol, autor i tema
+  \end{itemize}
+\item
+  \textbf{Gestió de Relacions}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Interfícies intuïtives per a les relacions Have, Want, Exchange i
+    SaleDonation
+  \item
+    Visualització de les valoracions (Reviews) amb filtres per puntuació
+  \end{itemize}
+\item
+  \textbf{Funcionalitats generals}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Filtres per camps rellevants a cada model
+  \item
+    Camps de cerca per facilitar la localització ràpida d'entitats
+  \item
+    Organització jeràrquica per dates en els models que ho requereixen
+  \end{itemize}
+\end{enumerate}
+
+\textbf{Accés al Tauler d'Administració}
+
+L'administració està disponible a la URL \texttt{/admin/} i requereix
+credencials de superusuari. Es pot crear un superusuari mitjançant:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python}\NormalTok{ manage.py createsuperuser}
+\end{Highlighting}
+\end{Shaded}
+
+O dins del contenidor Docker:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{docker{-}compose}\NormalTok{ exec web python manage.py createsuperuser}
+\end{Highlighting}
+\end{Shaded}
+
+Es podrà accedir al tauler d'administració amb les credencials del
+superusuari creat al navegador web a la URL
+\texttt{http://localhost:8000/admin/}.
+
+\hypertarget{sistema-dautenticaciuxf3-i-registre}{%
+\subsection{4. Sistema d'Autenticació i
+Registre}\label{sistema-dautenticaciuxf3-i-registre}}
+
+S'ha implementat un sistema d'autenticació basat estenent el sistema
+d'usuari de Django i el seu sistema de formularis. El sistema permet als
+usuaris registrar-se, iniciar sessió i gestionar el seu perfil d'usuari.
+D'aquesta manera s'aprofita les funcionalitats de validació que els
+camps ja porten per defecte.
+
+\hypertarget{formularis-dautenticaciuxf3}{%
+\subsubsection{Formularis
+d'Autenticació}\label{formularis-dautenticaciuxf3}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Formulari de Registre (\texttt{CustomUserCreationForm})}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Estén el \texttt{UserCreationForm} natiu de Django
+  \item
+    Afegeix camps addicionals: correu electrònic (obligatori) i ubicació
+    (opcional)
+  \item
+    Utilitza transaccions atòmiques per garantir la consistència de les
+    dades
+  \item
+    Gestiona automàticament la creació del perfil d'usuari personalitzat
+  \end{itemize}
+\item
+  \textbf{Formulari d'Inici de Sessió (\texttt{LoginForm})}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Formulari personalitzat per a la validació de credencials
+  \item
+    Camp de nom d'usuari i contrasenya amb validació adequada
+  \end{itemize}
+\end{enumerate}
+
+\hypertarget{procuxe9s}{%
+\subsubsection{Procés}\label{procuxe9s}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Procés de Registre}:
+
+  \begin{itemize}
+  \item
+    Formulari amb validació completa de contrasenyes i unicitat
+    d'usuaris
+  \item
+    Assignació d'ubicació si està disponible
+  \end{itemize}
+\item
+  \textbf{Procés d'Inici de Sessió}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Validació segura de credencials
+  \item
+    Redirecció personalitzada després de l'autenticació
+  \end{itemize}
+\end{enumerate}
+
+\begin{quote}
+Utilitzar com base els formularis de Django per a la creació d'usuaris i
+autenticació ens ha permès aprofitar les funcionalitats de validació i
+no haver-les de implementar manualment.
+\end{quote}
+
+\hypertarget{configuraciuxf3-de-docker}{%
+\subsection{5. Configuració de Docker}\label{configuraciuxf3-de-docker}}
+
+El projecte s'ha configurat per funcionar en un entorn containeritzat
+utilitzant Docker, de manera que es pot desplegar fàcilment en qualsevol
+màquina amb Docker instal·lat.
+
+\hypertarget{estructura-de-contenidors}{%
+\subsubsection{Estructura de
+contenidors}\label{estructura-de-contenidors}}
+
+L'entorn Docker consta principalment d'un contenidor web que executa
+l'aplicació Django:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Contenidor web}: Basat en Python, amb totes les dependències
+  necessàries per executar l'aplicació Django
+\item
+  \textbf{Base de dades}: Actualment utilitzem SQLite (inclosa dins del
+  contenidor web) \textgreater{} \emph{Nota: De moment no s'ha
+  implementat una base de dades externa com PostgreSQL, depenent de les
+  necessitats futures del projecte ja es valorarà si és necessari
+  fer-ho.}
+\end{enumerate}
+
+\hypertarget{arxius-de-configuraciuxf3}{%
+\subsubsection{Arxius de configuració}\label{arxius-de-configuraciuxf3}}
+
+El projecte inclou els següents arxius de configuració de Docker:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Dockerfile}: Defineix la imatge base, instal·la dependències i
+  configura l'entorn d'execució
+\item
+  \textbf{docker-compose.yml}: Orquestra els serveis, defineix els
+  volums per persistència de dades i configura les variables d'entorn
+\end{itemize}
+
+\hypertarget{volums-i-persistuxe8ncia}{%
+\subsubsection{Volums i persistència}\label{volums-i-persistuxe8ncia}}
+
+S'han configurat volums per garantir la persistència de les dades: - El
+codi font del projecte es munta com un volum al contenidor - La base de
+dades SQLite es manté persistent entre execucions
+
+\hypertarget{execuciuxf3-del-projecte-amb-docker}{%
+\subsubsection{Execució del Projecte amb
+Docker}\label{execuciuxf3-del-projecte-amb-docker}}
+
+Per executar l'aplicació en un entorn local:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Prerequisits}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Docker i Docker Compose instal·lats al sistema
+  \item
+    Git per clonar el repositori
+  \end{itemize}
+\item
+  \textbf{Clonar el repositori}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{git}\NormalTok{ clone https://github.com/Krisoc123/ProjecteWeb.git}
+\BuiltInTok{cd}\NormalTok{ ProjecteWeb}
+\end{Highlighting}
+\end{Shaded}
+\item
+  \textbf{Construir i iniciar els contenidors}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{docker{-}compose}\NormalTok{ build}
+\ExtensionTok{docker{-}compose}\NormalTok{ up}
+\end{Highlighting}
+\end{Shaded}
+\item
+  \textbf{Aplicar les migracions} (només al primer inici o després de
+  canvis al model):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{docker{-}compose}\NormalTok{ exec web python manage.py migrate}
+\end{Highlighting}
+\end{Shaded}
+\item
+  \textbf{Crear un superusuari} (opcional):
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{docker{-}compose}\NormalTok{ exec web python manage.py createsuperuser}
+\end{Highlighting}
+\end{Shaded}
+\end{enumerate}
+
+\hypertarget{accuxe9s-a-laplicaciuxf3}{%
+\subsubsection{Accés a l'aplicació}\label{accuxe9s-a-laplicaciuxf3}}
+
+Un cop en funcionament, l'aplicació estarà disponible a: -
+\textbf{Aplicació web}: http://localhost:8000 - \textbf{Interfície
+d'administració}: http://localhost:8000/admin
+
+\hypertarget{compliment-dels-12-factors}{%
+\subsection{6. Compliment dels 12
+Factors}\label{compliment-dels-12-factors}}
+
+El projecte intenta cumplir la guia dels 12 factors, a continuació se'n
+fa un resum:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Base de codi}: Mantenim un repositori Git únic per tot el codi
+  font del projecte.
+\item
+  \textbf{Dependències}: Totes les dependències estan explícitament
+  declarades i aïllades mitjançant Poetry, permetent un control precís
+  de les versions.
+\item
+  \textbf{Configuració}: Tot i que actualment no utilitzem variables
+  d'entorn per a la configuració, el projecte està preparat per
+  implementar-les en el futur quan sigui necessari.
+\item
+  \textbf{Serveis de suport}: La base de dades és tractada com un recurs
+  extern vinculat, encara que actualment utilitzem SQLite.
+\item
+  \textbf{Construcció, publicació, execució}: El procés de desplegament
+  està clarament separat en aquestes fases mitjançant Docker, tot i que
+  de moment no necessitem escalar.
+\item
+  \textbf{Processos}: L'aplicació s'executa actualment com un únic
+  procés, seguint el model de Django.
+\item
+  \textbf{Assignació de ports}: L'aplicació s'exposa a través d'un port
+  específic definit al docker-compose.yml.
+\item
+  \textbf{Concurrència}: L'arquitectura està preparada per créixer, tot
+  i que en l'estat actual no requereix múltiples processos.
+\item
+  \textbf{Descartabilitat}: Els contenidors Docker es poden iniciar i
+  aturar ràpidament sense afectar la integritat del sistema.
+\item
+  \textbf{Paritat entre entorns}: Els entorns de desenvolupament i
+  producció són el més similars possible gràcies a Docker.
+\item
+  \textbf{Logs}: Es tracten els logs com a fluxos d'esdeveniments, que
+  es poden consultar mitjançant \texttt{docker-compose\ logs}.
+\item
+  \textbf{Processos d'administració}: Les tasques administratives
+  s'executen com a processos únics, com demostra l'ús de
+  \texttt{python\ manage.py}.
+\end{enumerate}

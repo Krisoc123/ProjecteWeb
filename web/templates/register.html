@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}Registro - Biblioteca{% endblock %}
+{% block title %}Register - Library{% endblock %}
 
 {% block content %}
 <div class="register-container">
-    <h1>Crear una cuenta</h1>
+    <h1>Create an account</h1>
     
     <form method="post" class="register-form">
         {% csrf_token %}
@@ -24,9 +24,9 @@
             </div>
         {% endfor %}
         
-        <button type="submit" class="submit-button">Registrarse</button>
+        <button type="submit" class="submit-button">Register</button>
     </form>
     
-    <p class="login-link">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Iniciar sesión</a></p>
+    <p class="login-link">¿Already have an account? <a href="{% url 'login' %}">Log in</a></p>
 </div>
 {% endblock %}

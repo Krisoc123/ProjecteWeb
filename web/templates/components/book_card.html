@@ -1,0 +1,56 @@
+<div class="book-card">
+    <!-- Cover image -->
+    <div class="book-cover">
+        <!-- 1st option: Open Library -->
+        <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
+             alt="Cover of {{ book.title }}"
+             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
+             onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
+    </div>
+    
+    <!-- 2nd option: Google Books -->
+    <script>
+    function fetchGoogleBooksCover(imgElement, isbn) {
+        // Primero consultar la API para obtener el ID
+        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.items && data.items.length > 0) {
+                    // Obtener el ID del primer resultado
+                    const bookId = data.items[0].id;
+                    // Cambiar la URL de la imagen con el ID correcto
+                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
+                } else {
+                    // No hay resultados, usar imagen predeterminada
+                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching Google Books data:', error);
+                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+            });
+    }
+    </script>
+    <!-- Contenido original -->
+    <h2>{{ book.title }}</h2>
+    <p class="author">by {{ book.author.name }}</p>
+    {% if book.co_authors.exists %}
+        <p class="co-authors">
+            Co-authors: 
+            {% for co_author in book.co_authors.all %}
+                {{ co_author.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    {% endif %}
+    <p class="book-details">
+        <span class="category">{{ book.get_category_display }}</span>
+        <span class="pages">{{ book.page_count }} pages</span>
+    </p>
+    <p class="price">${{ book.price }}</p>
+    <div class="book-footer">
+        <span class="availability {% if book.in_stock %}available{% else %}unavailable{% endif %}">
+            {% if book.in_stock %}In stock{% else %}Out of stock{% endif %}
+        </span>
+        <span class="isbn">ISBN: {{ book.isbn }}</span>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+---
+title: "Projecte d'Intercanvi de Llibres"
+author: 
+  - "Wellington Stephen Baéz Ramírez"
+  - "May Castells Raga"
+  - "Cristina Malena Díaz"
+  - "Krishna Ocaña Zevallos"
+  - "Ainhoa Pérez García"
+  - "Anna Marín Nuño"
+date: "Abril 2025"
+lang: ca
+papersize: a4
+fontsize: 12pt
+geometry: margin=2.5cm
+colorlinks: true
+linkcolor: blue
+urlcolor: blue
+citecolor: blue
+toccolor: blue
+links-as-notes: false
+breaklinks: false
+toc: true
+from: markdown+autolink_bare-uris
+toc-depth: 3
+numbersections: false
+header-includes: |
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhead[L]{Projecte d'Intercanvi de Llibres}
+  \fancyhead[R]{Projecte Web}
+  \fancyfoot[C]{\thepage}
+  \usepackage{hyperref}
+  \hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=blue,
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Projecte d'Intercanvi de Llibres},
+    pdfauthor={Wellington S. Báez, May Castells, Cristina M. Díaz, Krishna Ocaña, Ainhoa Pérez, Anna Marín},
+    pdfdisplaydoctitle=true,
+    bookmarks=true,
+    pdfstartview=FitH
+  }
+---

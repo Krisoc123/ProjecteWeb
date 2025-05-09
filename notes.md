@@ -1,7 +1,4 @@
 # Projecte d'Intercanvi de Llibres
-## 0. Enllaç al Repositori
-
-`https://github.com/Krisoc123/ProjecteWeb.git`
 
 ## 1. Descripció del Projecte
 Aquest projecte implementa una aplicació web utilitzant Django que permet als usuaris intercanviar, vendre o donar llibres entre ells mitjançant un sistema de punts.
@@ -11,9 +8,7 @@ Aquest projecte implementa una aplicació web utilitzant Django que permet als u
 El model de dades consisteix en les següents entitats i relacions:
 
 ### Entitats Principals
-
 Declarades en `models.py`:
-
 1. **User** (Usuari)
    - Estén el model d'usuari de Django (AbstractUser)
    - Incorpora gestió d'autenticació nativa de Django
@@ -53,7 +48,6 @@ Declarades en `models.py`:
    - Registra intercanvis de llibres entre dos usuaris
    - Inclou llibres intercanviats, ubicació i estat de la transacció
 
-Respecte al diagrama original s'ha respectat.
 
 ### Diagrama de Relacions
 
@@ -108,10 +102,7 @@ El tauler d'administració permet:
    - Organització jeràrquica per dates en els models que ho requereixen
 
 
-**Accés al Tauler d'Administració**
-
-
-
+#### Accés al Tauler d'Administració
 L'administració està disponible a la URL `/admin/` i requereix credencials de superusuari. Es pot crear un superusuari mitjançant:
 
 ```bash
@@ -125,8 +116,6 @@ docker-compose exec web python manage.py createsuperuser
 ```
 
 Es podrà accedir al tauler d'administració amb les credencials del superusuari creat al navegador web a la URL `http://localhost:8000/admin/`.
-
-![](https://i.imgur.com/9YghUUE.png)
 
 
 
@@ -159,8 +148,6 @@ S'ha implementat un sistema d'autenticació basat estenent el sistema d'usuari d
 
 > Utilitzar com  base els formularis de Django per a la creació d'usuaris i autenticació ens ha permès aprofitar les funcionalitats de validació i no haver-les de implementar manualment.
 
-![](https://i.imgur.com/Qh6fEpM.png)
-
 ## 5. Configuració de Docker
 
 El projecte s'ha configurat per funcionar en un entorn containeritzat utilitzant Docker, de manera que es pot desplegar fàcilment en qualsevol màquina amb Docker instal·lat. 
@@ -171,17 +158,14 @@ L'entorn Docker consta principalment d'un contenidor web que executa l'aplicaci�
 
 1. **Contenidor web**: Basat en Python, amb totes les dependències necessàries per executar l'aplicació Django
 2. **Base de dades**: Actualment utilitzem SQLite (inclosa dins del contenidor web)
-
-   > *Nota: De moment no s'ha implementat una base de dades externa com PostgreSQL, depenent de les necessitats futures del projecte ja es valorarà si és necessari fer-ho.*
+   > *Nota: Per a un desplegament de producció, seria recomanable migrar a PostgreSQL o un altre SGBD més robust*
 
 ### Arxius de configuració
 
 El projecte inclou els següents arxius de configuració de Docker:
 
 - **Dockerfile**: Defineix la imatge base, instal·la dependències i configura l'entorn d'execució
-- **docker-compose.yml**: Orquestra els serveis, defineix els volums per persistència de dades i configura les variables d'entorn 
-
-> *Nota: De moment només s'ha creat un servei, el de l'aplicació web, i no s'ha implementat un servei de base de dades externa com PostgreSQL.*
+- **docker-compose.yml**: Orquestra els serveis, defineix els volums per persistència de dades i configura les variables d'entorn
 
 ### Volums i persistència
 
@@ -219,12 +203,10 @@ Per executar l'aplicació en un entorn local:
    docker-compose exec web python manage.py createsuperuser
    ```
 
-**Accés a l'aplicació**
+### Accés a l'aplicació
 
 Un cop en funcionament, l'aplicació estarà disponible a:
-
 - **Aplicació web**: http://localhost:8000
-
 - **Interfície d'administració**: http://localhost:8000/admin
 
 
@@ -263,3 +245,24 @@ El projecte intenta cumplir la guia dels 12 factors, a continuació se'n fa un r
 
 
 
+---
+
+
+# Descargar la portada usando curl con la opción -L para seguir redirecciones
+curl -L -o portada.jpg "https://covers.openlibrary.org/b/isbn/9780747532743-L.jpg"
+
+
+curl -L -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" -o portada.jpg "https://books.google.com/books/content?id=ISBN:9780747532743&printsec=frontcover&img=1&zoom=2"
+
+
+
+sqlitebrowser ~/university/web_project/our_project/ProjecteWeb/db.sqlite3
+
+### add book register (manual sql)
+
+INSERT INTO web_book (ISBN, title, author, topic, publish_date, base_price) 
+VALUES ('9780747532743', 'Harry Potter i la Pedra Filosofal', 'J.K. Rowling', 'Fantasia', '1997-06-26', 500);
+
+---
+tail -n +2 README.md > readme_for_pdf.md
+pandoc metadata.yaml README.md -o ProjecteIntercanviLlibres.pdf --pdf-engine=xelatex --from="markdown+autolink_bare_uris"
