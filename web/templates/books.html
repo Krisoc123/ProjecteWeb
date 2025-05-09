@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}Books - Library{% endblock %}
+{% load static %}
+
+
 
 {% block content %}
+<div class="books-container">
+    <script src="{% static 'js/book_autocomplete.js' %}"></script>
+</div>
 <div class="books-container">
     <h1>Our books</h1>
 
@@ -10,8 +16,8 @@
     <div class="search-container">
         <form method="GET" action="{% url 'books' %}" class="search-form">
             <div class="search-group">
-                <input type="text" name="author" placeholder="Author name..." value="{{ request.GET.author }}">
-                <input type="text" name="title" placeholder="Book title..." value="{{ request.GET.title }}">
+                <input id="id_author" type="text" name="author" placeholder="Author name..." value="{{ request.GET.author }}">
+                <input id="id_title" type="text" name="title" placeholder="Book title..." value="{{ request.GET.title }}">
                 <select name="topic">
                     <option value="">All topics</option>
                     <option value="Fantasia" {% if request.GET.topic == "Fantasia" %}selected{% endif %}>Fantasia</option>
@@ -53,6 +59,53 @@
             <p class="no-books">No additional books found online.</p>
         {% endif %}
     </section>
+    <script>
+        $(function() {
+            console.log("Document ready, inicialitzant autocompletat");
+
+            if ($("#id_title").length) {
+              console.log("Element #id_title trobat, aplicant autocompletat");
+
+              $("#id_title").autocomplete({
+                source: function(request, response) {
+                  console.log("Enviant petició a Google Books:", request.term);
+
+                  $.ajax({
+                    url: "https://www.googleapis.com/books/v1/volumes",
+                    dataType: "json",
+                    data: {
+                      q: request.term,
+                      maxResults: 10
+                    },
+                    success: function(data) {
+                      console.log("Resposta rebuda:", data);
+
+                      if (!data.items) {
+                        console.log("No s'han trobat resultats");
+                        return response([]);
+                      }
+
+                      response($.map(data.items, function(item) {
+                        const volume = item.volumeInfo;
+                        return {
+                          label: volume.title,
+                          value: volume.title
+                        };
+                      }));
+                    },
+                    error: function(xhr, status, error) {
+                      console.error("Error API:", error);
+                      response([]);
+                    }
+                  });
+                },
+                minLength: 4
+              });
+            } else {
+              console.log("ERROR: No s'ha trobat l'element #id_title!");
+            }
+          });
+    </script>
     {% if books %}
         <div class="books-grid">
             {% for book in books %}
