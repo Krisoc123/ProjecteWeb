@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block title %}Books - Library{% endblock %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+</head>
+<body>
+    {% block content %}
+
+        <div class="book-entry-container">
+        <div class="book-info">
+        <h1>{{ mybook.title}}</h1>
+            <p> {{mybook.author }}</p>
+        <h2>{{mybook.topic}}</h2>
+
+        </div>
+            <div class="book-card img">
+                        <!-- Primera opción: Open Library -->
+                        <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
+                             alt="Cover of {{ book.title }}"
+                             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
+                             onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
+            </div>
+        </div>
+        <div class="buttons-container">
+            <a href="{% url 'add_to_havelist' %}" class="button"> Add to my Havelist </a>
+            <a href="{% url 'add_to_wishlist' %}" class="button"> Add to my Wishlist </a>
+            <a href="{% url 'book-trade' %}" class="button"> Look for a trade </a>
+            <a href="{% url 'book-buy' %}" class="button"> Buy this book </a>
+        </div>
+     {% endblock %}
+ <script>
+                    function fetchGoogleBooksCover(imgElement, isbn) {
+                        // Primero consultar la API para obtener el ID
+                        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.items && data.items.length > 0) {
+                                    // Obtener el ID del primer resultado
+                                    const bookId = data.items[0].id;
+                                    // Cambiar la URL de la imagen con el ID correcto
+                                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
+                                } else {
+                                    // No hay resultados, usar imagen predeterminada
+                                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching Google Books data:', error);
+                                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+                            });
+                    }
+                    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 {% block title %}Books - Library{% endblock %}
 {% load static %}
 
-  
+
 
 {% block content %}
 <div class="books-container">
@@ -11,7 +11,7 @@
 </div>
 <div class="books-container">
     <h1>Our books</h1>
-    
+
     <!-- Formulari de cerca -->
     <div class="search-container">
         <form method="GET" action="{% url 'books' %}" class="search-form">
@@ -31,7 +31,7 @@
             {% endif %}
         </form>
     </div>
-    
+
     <!-- Secció 1: Llibres locals -->
     <section class="books-section local-books">
         <h2>Books in our library</h2>
@@ -45,7 +45,7 @@
             <p class="no-books">No books found in our database with these filters.</p>
         {% endif %}
     </section>
-    
+
     <!-- Secció 2: Llibres de les APIs -->
     <section class="books-section external-books">
         <h2>Books available elsewhere</h2>
@@ -59,6 +59,118 @@
             <p class="no-books">No additional books found online.</p>
         {% endif %}
     </section>
+    <script>
+        $(function() {
+            console.log("Document ready, inicialitzant autocompletat");
+
+            if ($("#id_title").length) {
+              console.log("Element #id_title trobat, aplicant autocompletat");
+
+              $("#id_title").autocomplete({
+                source: function(request, response) {
+                  console.log("Enviant petició a Google Books:", request.term);
+
+                  $.ajax({
+                    url: "https://www.googleapis.com/books/v1/volumes",
+                    dataType: "json",
+                    data: {
+                      q: request.term,
+                      maxResults: 10
+                    },
+                    success: function(data) {
+                      console.log("Resposta rebuda:", data);
+
+                      if (!data.items) {
+                        console.log("No s'han trobat resultats");
+                        return response([]);
+                      }
+
+                      response($.map(data.items, function(item) {
+                        const volume = item.volumeInfo;
+                        return {
+                          label: volume.title,
+                          value: volume.title
+                        };
+                      }));
+                    },
+                    error: function(xhr, status, error) {
+                      console.error("Error API:", error);
+                      response([]);
+                    }
+                  });
+                },
+                minLength: 4
+              });
+            } else {
+              console.log("ERROR: No s'ha trobat l'element #id_title!");
+            }
+          });
+    </script>
+    {% if books %}
+        <div class="books-grid">
+            {% for book in books %}
+                <div class="book-card">
+                    <!-- Nueva sección de portada -->
+                    <div class="book-cover">
+                        <!-- Primera opción: Open Library -->
+                        <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
+                             alt="Cover of {{ book.title }}"
+                             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
+                             onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
+                    </div>
+
+                    <!-- Añadir este script al final de la página -->
+                    <script>
+                    function fetchGoogleBooksCover(imgElement, isbn) {
+                        // Primero consultar la API para obtener el ID
+                        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.items && data.items.length > 0) {
+                                    // Obtener el ID del primer resultado
+                                    const bookId = data.items[0].id;
+                                    // Cambiar la URL de la imagen con el ID correcto
+                                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
+                                } else {
+                                    // No hay resultados, usar imagen predeterminada
+                                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching Google Books data:', error);
+                                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
+                            });
+                    }
+                    </script>
+                    <!-- Contenido original -->
+                    <a href="/books/entry/{{ book.ISBN }}/"><h2>{{ book.title }}</h2></a>
+
+                    <p class="author">by {{ book.author }}</p>
+                    {% if book.co_authors.exists %}
+                        <p class="co-authors">
+                            Co-authors:
+                            {% for co_author in book.co_authors.all %}
+                                {{ co_author.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                    <p class="book-details">
+                        <span class="category">{{ book.get_category_display }}</span>
+                        <span class="pages">{{ book.page_count }} pages</span>
+                    </p>
+                    <p class="price">${{ book.price }}</p>
+                    <div class="book-footer">
+                        <span class="availability {% if book.in_stock %}available{% else %}unavailable{% endif %}">
+                            {% if book.in_stock %}In stock{% else %}Out of stock{% endif %}
+                        </span>
+                        <span class="isbn">ISBN: {{ book.isbn }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-books">No books available at the moment.</p>
+    {% endif %}
 
 </div>
 

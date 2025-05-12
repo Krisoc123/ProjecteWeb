@@ -8,8 +8,8 @@
                  alt="No cover available">
         {% endif %}
     </div>
-    
-    <h3 class="title">{{ book.title }}</h3>
+
+    <a href="/books/entry/{{ book.ISBN }}/"><h3 class="title">{{ book.title }}</h3></a>
     <p class="author">by {{ book.author }}</p>
     
     {% if book.description %}

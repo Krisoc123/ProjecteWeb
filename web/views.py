@@ -108,19 +108,19 @@ def books(request):
     author = request.GET.get('author', '')
     title = request.GET.get('title', '')
     topic = request.GET.get('topic', '')
-    
+
     # Filtrem els llibres locals
     queryset = Book.objects.all()
-    
+
     if author:
         queryset = queryset.filter(author__icontains=author)
-    
+
     if title:
         queryset = queryset.filter(title__icontains=title)
-    
+
     if topic:
         queryset = queryset.filter(topic=topic)
-    
+
     # Obtenim llibres d'APIs externes si hi ha paràmetres de cerca
     external_books = []
     if author or title:
@@ -133,7 +133,7 @@ def books(request):
                 print(f"Cridant API: {api_url}")  # Logging
                 google_response = requests.get(api_url)
                 print(f"Codi de resposta: {google_response.status_code}")  # Logging
-                
+
                 if google_response.status_code == 200:
                     data = google_response.json()
                     print(f"Resultats obtinguts: {len(data.get('items', []))}")  # Logging
@@ -150,12 +150,12 @@ def books(request):
                         })
             except Exception as e:
                 print(f"Error fetching from Google Books API: {e}")
-    
+
     context = {
         'books': queryset,
         'external_books': external_books
     }
-    
+
     return render(request, 'books.html', context)
 
 def trending_view(request):
@@ -166,7 +166,7 @@ class CreateWantView(LoginRequiredMixin, CreateView):
     form_class = WantForm
     template_name = 'want_form.html'
     success_url = reverse_lazy('books')
-    
+
     def get_initial(self):
         initial = super().get_initial()
         # Recollim dades del llibre dels paràmetres GET
@@ -175,13 +175,13 @@ class CreateWantView(LoginRequiredMixin, CreateView):
         initial['author'] = self.request.GET.get('author', '')
         initial['topic'] = self.request.GET.get('topic', '')
         return initial
-    
+
     def form_valid(self, form):
         isbn = form.cleaned_data.get('isbn')
         title = form.cleaned_data.get('title')
         author = form.cleaned_data.get('author')
         topic = form.cleaned_data.get('topic')
-        
+
         # Si el llibre no existeix a la nostra BD, l'afegim
         try:
             book = Book.objects.get(ISBN=isbn)
@@ -196,13 +196,13 @@ class CreateWantView(LoginRequiredMixin, CreateView):
                 base_price=10  # Preu base predeterminat
             )
             book.save()
-        
+
         # Obtenim l'usuari actual i li assignem al want
         custom_user = User.objects.get(auth_user=self.request.user)
-        
+
         # Comprovar si ja existeix un want per aquest usuari i llibre
         existing_want = Want.objects.filter(user=custom_user, book=book).first()
-        
+
         if existing_want:
             # Actualitzar la prioritat si ja existeix
             existing_want.priority = form.cleaned_data['priority']
@@ -213,9 +213,9 @@ class CreateWantView(LoginRequiredMixin, CreateView):
             want.user = custom_user
             want.book = book
             want.save()
-            
+
         return redirect(self.success_url)
-    
+
 class CreateHaveView(LoginRequiredMixin, CreateView):
     model = Have
     form_class = HaveForm  # Canviat de WantForm a HaveForm
@@ -270,3 +270,19 @@ class CreateHaveView(LoginRequiredMixin, CreateView):
             have.save()
 
         return redirect(self.success_url)
+
+def book_entry(request,ISBN):
+    mybook = Book.objects.get(ISBN=ISBN)
+    return  render(request,'book-entry.html', {'mybook': mybook})
+
+def book_trade_view(request):
+    return render(request, 'trade_form.html')
+
+def book_buy_view(request):
+    return  render(request, 'buy_form.html')
+
+def wishlist_view(request):
+    return render(request, 'wishlist.html')
+
+def havelist_view(request):
+    return render(request, 'havelist.html')
