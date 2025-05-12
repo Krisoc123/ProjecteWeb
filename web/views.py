@@ -169,4 +169,7 @@ def wishlist_view(request):
 
 def book_trade_view(request, ISBN):
     mybook = Book.objects.get(ISBN=ISBN)
-    return render(request, 'book-trade.html')
+    return render(request, 'book-trade.html', {'mybook': mybook})
+
+def book_buy_view(request):
+    return  render(request,'book-buy.html')
