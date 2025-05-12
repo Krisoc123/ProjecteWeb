@@ -16,6 +16,6 @@ urlpatterns = [
     path('books/entry/<ISBN>/', views.book_entry ,name='book-entry'),
     path('wishlist/', views.wishlist_view ,name='wishlist'),
     path('havelist/', views.havelist_view ,name='havelist'),
-    path('books/trade/', views.book_trade_view ,name='book-trade'),
-    path('books/buy/', views.book_buy_view ,name='book-buy'),
+    path('trade/', views.book_trade_view ,name='book-trade'),
+    path('buy/', views.book_buy_view ,name='book-buy'),
 ]
