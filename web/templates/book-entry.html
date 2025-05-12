@@ -28,7 +28,7 @@
         <div class="buttons-container">
             <a href="{% url 'shelve' %}" class="button"> Add to my Shelve </a>
             <a href="{% url 'wishlist' %}" class="button"> Add to Wishlist </a>
-            <a href="{% url 'book-trade/{{ mybook.ISBN }}' %}" class="button"> Look for a trade </a>
+            <a href="book-trade/{{ mybook.ISBN }}" class="button"> Look for a trade </a>
         </div>
      {% endblock %}
  <script>
