@@ -1,8 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import transaction
-from .models import User as CustomUser
+from .models import User as CustomUser, Want, Book, Have
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -31,3 +31,42 @@ class CustomUserCreationForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
+
+class WantForm(forms.ModelForm):
+    priority = forms.IntegerField(
+        min_value=1,
+        max_value=5,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Priority (1-5)'}),
+        help_text='Set the priority of this book (1=lowest, 5=highest)'
+    )
+    
+    # Hidden fields for book data
+    isbn = forms.CharField(widget=forms.HiddenInput(), required=False)
+    title = forms.CharField(widget=forms.HiddenInput(), required=False)
+    author = forms.CharField(widget=forms.HiddenInput(), required=False)
+    topic = forms.CharField(widget=forms.HiddenInput(), required=False)
+    
+    class Meta:
+        model = Want
+        fields = ['priority']
+        
+        
+
+class HaveForm(forms.ModelForm):
+    class Meta:
+        model = Have
+        fields = ['status', 'isbn', 'title', 'author', 'topic']
+        
+    # Assegurar-nos que el camp status té els widgets i atributs necessaris
+    status = forms.ChoiceField(
+        choices=Have.STATUS_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Selecciona l'estat del llibre"
+    )
+    
+    # Camps ocults
+    isbn = forms.CharField(widget=forms.HiddenInput(), required=False)
+    title = forms.CharField(widget=forms.HiddenInput(), required=False)
+    author = forms.CharField(widget=forms.HiddenInput(), required=False)
+    topic = forms.CharField(widget=forms.HiddenInput(), required=False)

@@ -3,6 +3,7 @@
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     
     <meta charset="UTF-8">
@@ -10,7 +11,13 @@
     <title>{% block title %}Library{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'style.css' %}">
+    <script src="{% static 'js/love_button.js' %}"></script>
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+    });
+</script>
 <body>
     <header>
         <nav>
@@ -38,7 +45,7 @@
         <div class="messages-container">
             <ul class="messages">
                 {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                 {% endfor %}
             </ul>
         </div>

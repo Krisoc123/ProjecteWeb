@@ -9,6 +9,9 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('books/', views.books, name='books'),
     path('accounts/profile/', views.profile_view, name='profile'),
+    path('add-to-wishlist/', views.CreateWantView.as_view(), name='add_to_wishlist'),
+    path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist'),
+
     path('trending/', views.trending_view, name='trending'),
     path('books/entry/<ISBN>/', views.book_entry ,name='book-entry'),
     path('wishlist/', views.wishlist_view ,name='wishlist'),

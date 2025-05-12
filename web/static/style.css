@@ -49,7 +49,9 @@ main {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 0 2rem;
-    margin-bottom: 100px;
+    margin-bottom: 100px; /* Assegurant que hi ha suficient espai pel footer */
+    position: relative;
+    z-index: 1;
 }
 
 /* Login form */
@@ -107,6 +109,22 @@ main {
     margin-top: 0.5rem;
     font-size: 0.85rem;
     color: #7f8c8d;
+}
+
+.form-control {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: border-color 0.2s;
+    font-size: 0.85rem;
+    color: #2c3e50;
 }
 
 .error-message {
@@ -260,6 +278,7 @@ footer {
     bottom: 0;
     width: 100%;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Assegurant que el footer està per sobre de tot */
 }
 
 /* Home page */
@@ -329,15 +348,90 @@ footer {
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.love-button {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: rgb(209, 47, 47);
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    position: relative; /* Canviat de absolute a relative */
+}
+
+.love-button:hover {
+    background-color: #ff5858;
+    transform: scale(1.05);
+}
+
+.love-button svg {
+    width: 23px !important;
+    height: 23px !important;
+    stroke: #ffffff;
+    stroke-width: 2;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    position: relative; /* Canviat de absolute a relative */
+    z-index: 11;
+}
+
+.love-button.active svg {
+    fill: #ff6b6b;
+}
+
+.have-button {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: rgb(209, 47, 47);
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    position: relative; /* Canviat de absolute a relative */
+}
+
+.have-button:hover {
+    background-color: #ff5858;
+    transform: scale(1.05);
+}
+
+.have-button svg {
+    width: 23px !important;
+    height: 23px !important;
+    stroke: #ffffff;
+    stroke-width: 2;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    position: relative; /* Canviat de absolute a relative */
+    z-index: 11;
+}
+
+.have-button.active svg {
+    fill: #ff6b6b;
 }
 
 /* Per assegurar-te que els llibres tenen una mida adequada */
 .book-card {
+    position: relative;
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 15px;
+    padding: 13px;
     transition: transform 0.3s ease;
     background-color: #fff;
     height: 100%;
@@ -348,6 +442,49 @@ footer {
 .book-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Nou contenidor per al footer i botons */
+.card-bottom-container {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.book-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 10px;
+}
+
+.book-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.availability {
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.available {
+    color: #27ae60;
+}
+
+.unavailable {
+    color: #e74c3c;
+}
+
+.isbn {
+    font-size: 0.8rem;
+    color: #7f8c8d;
 }
 
 /* Responsive */
@@ -421,6 +558,46 @@ footer {
 .book-card button:hover {
     background-color: #0056b3;
 }
+.trending-books {
+    padding: 30px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    margin: 30px auto;
+    text-align: center;
+}
+
+.trending-books h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+
+.book-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.book-card h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+}
+
+.author {
+    font-size: 15px;
+}
+
+.title {
+    font-size: 20px;
+}
+
+.book-card p {
+    margin: 0 0 10px;
+    color: #666;
+}
+
+
 .book-entry-container {
   display: grid;
   margin-top:20%;
