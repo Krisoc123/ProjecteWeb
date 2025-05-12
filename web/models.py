@@ -50,9 +50,16 @@ class Review(models.Model):
         return f"Review by {self.user.name} for {self.book.ISBN}"
 
 class Have(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('used', 'Used'),
+        ('damaged', 'Damaged')
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='used')
+    points = models.IntegerField(default=99)  # Points as unit
+    
     def __str__(self):
         return f"{self.user.name} has {self.book.ISBN}"
 

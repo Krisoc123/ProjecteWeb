@@ -1,0 +1,91 @@
+[
+{
+  "model": "web.user",
+  "pk": 1,
+  "fields": {
+    "auth_user": 1,
+    "points": 0,
+    "location": "Lleida",
+    "name": "anna",
+    "email": "annamarinnunyo@gmail.com",
+    "joined_date": "2025-04-06T16:57:20.281Z"
+  }
+},
+{
+  "model": "web.user",
+  "pk": 2,
+  "fields": {
+    "auth_user": 2,
+    "points": 0,
+    "location": "not specified",
+    "name": "annam",
+    "email": "",
+    "joined_date": "2025-04-12T08:14:03.045Z"
+  }
+},
+{
+  "model": "web.book",
+  "pk": "",
+  "fields": {
+    "title": "",
+    "author": "",
+    "topic": "General",
+    "publish_date": "2025-05-09",
+    "base_price": 10
+  }
+},
+{
+  "model": "web.book",
+  "pk": "1804618918",
+  "fields": {
+    "title": "The StatQuest Illustrated Guide to Machine Learning!!!",
+    "author": "Packt Publishing, Limited",
+    "topic": "General",
+    "publish_date": "2025-05-09",
+    "base_price": 10
+  }
+},
+{
+  "model": "web.book",
+  "pk": "9780061120084",
+  "fields": {
+    "title": "",
+    "author": "",
+    "topic": "",
+    "publish_date": null,
+    "base_price": 0
+  }
+},
+{
+  "model": "web.book",
+  "pk": "9780307341570",
+  "fields": {
+    "title": "",
+    "author": "",
+    "topic": "",
+    "publish_date": null,
+    "base_price": 0
+  }
+},
+{
+  "model": "web.book",
+  "pk": "9780451524935",
+  "fields": {
+    "title": "",
+    "author": "",
+    "topic": "",
+    "publish_date": null,
+    "base_price": 0
+  }
+},
+{
+  "model": "web.book",
+  "pk": "9789874958174",
+  "fields": {
+    "title": "Programación en JAVA IV",
+    "author": "Carlos Arroyo Díaz",
+    "topic": "General",
+    "publish_date": "2025-05-09",
+    "base_price": 10
+  }
+}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Add to Havelist{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Add to Your Havelist</h2>
+    
+    <form method="post" class="login-form">
+        {% csrf_token %}
+        
+        <div class="book-info">
+            <h3>{{ request.GET.title }}</h3>
+            <p>by {{ request.GET.author }}</p>
+            {% if request.GET.isbn %}
+            <p class="isbn">ISBN: {{ request.GET.isbn }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.status.id_for_label }}">Status:</label>
+            {{ form.status }}
+            <small class="form-text">{{ form.status.help_text }}</small>
+            {% if form.status.errors %}
+                <div class="error-message">{{ form.status.errors }}</div>
+            {% endif %}
+        </div>
+        
+        {{ form.isbn }}
+        {{ form.title }}
+        {{ form.author }}
+        {{ form.topic }}
+        
+        <button type="submit" class="submit-button">Add to Havelist</button>
+    </form>
+</div>
+{% endblock %}
