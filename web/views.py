@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction
-from .forms import CustomUserCreationForm, LoginForm
+from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
-
+from django.views.generic.edit import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.utils import timezone
+import datetime
 
 import requests
 
@@ -98,7 +102,7 @@ def profile_view(request):
     return render(request, 'profile.html', context)
 
 
-@login_required
+
 def books(request):
     # Obtenim els paràmetres de cerca
     author = request.GET.get('author', '')
@@ -125,7 +129,7 @@ def books(request):
         print(f"Cercant amb el terme: '{search_term}'")  # Logging
         if search_term:
             try:
-                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_term}&maxResults=6"
+                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_term}&maxResults=20"
                 print(f"Cridant API: {api_url}")  # Logging
                 google_response = requests.get(api_url)
                 print(f"Codi de resposta: {google_response.status_code}")  # Logging
@@ -156,3 +160,113 @@ def books(request):
 
 def trending_view(request):
     return render(request, 'trending.html')
+
+class CreateWantView(LoginRequiredMixin, CreateView):
+    model = Want
+    form_class = WantForm
+    template_name = 'want_form.html'
+    success_url = reverse_lazy('books')
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        # Recollim dades del llibre dels paràmetres GET
+        initial['isbn'] = self.request.GET.get('isbn', '')
+        initial['title'] = self.request.GET.get('title', '')
+        initial['author'] = self.request.GET.get('author', '')
+        initial['topic'] = self.request.GET.get('topic', '')
+        return initial
+    
+    def form_valid(self, form):
+        isbn = form.cleaned_data.get('isbn')
+        title = form.cleaned_data.get('title')
+        author = form.cleaned_data.get('author')
+        topic = form.cleaned_data.get('topic')
+        
+        # Si el llibre no existeix a la nostra BD, l'afegim
+        try:
+            book = Book.objects.get(ISBN=isbn)
+        except Book.DoesNotExist:
+            # Creem un nou llibre a la base de dades
+            book = Book(
+                ISBN=isbn,
+                title=title,
+                author=author,
+                topic=topic or "General",
+                publish_date=timezone.now().date(),  # Data actual com a predeterminada
+                base_price=10  # Preu base predeterminat
+            )
+            book.save()
+        
+        # Obtenim l'usuari actual i li assignem al want
+        custom_user = User.objects.get(auth_user=self.request.user)
+        
+        # Comprovar si ja existeix un want per aquest usuari i llibre
+        existing_want = Want.objects.filter(user=custom_user, book=book).first()
+        
+        if existing_want:
+            # Actualitzar la prioritat si ja existeix
+            existing_want.priority = form.cleaned_data['priority']
+            existing_want.save()
+        else:
+            # Crear un nou want
+            want = form.save(commit=False)
+            want.user = custom_user
+            want.book = book
+            want.save()
+            
+        return redirect(self.success_url)
+    
+class CreateHaveView(LoginRequiredMixin, CreateView):
+    model = Have
+    form_class = HaveForm  # Canviat de WantForm a HaveForm
+    template_name = 'have_form.html'
+    success_url = reverse_lazy('books')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # Recollim dades del llibre dels paràmetres GET
+        initial['isbn'] = self.request.GET.get('isbn', '')
+        initial['title'] = self.request.GET.get('title', '')
+        initial['author'] = self.request.GET.get('author', '')
+        initial['topic'] = self.request.GET.get('topic', '')
+        return initial
+
+    def form_valid(self, form):
+        isbn = form.cleaned_data.get('isbn')
+        title = form.cleaned_data.get('title')
+        author = form.cleaned_data.get('author')
+        topic = form.cleaned_data.get('topic')
+
+        # Si el llibre no existeix a la nostra BD, l'afegim
+        try:
+            book = Book.objects.get(ISBN=isbn)
+        except Book.DoesNotExist:
+            # Creem un nou llibre a la base de dades
+            book = Book(
+                ISBN=isbn,
+                title=title,
+                author=author,
+                topic=topic or "General",
+                publish_date=timezone.now().date(),  # Data actual com a predeterminada
+                base_price=10  # Preu base predeterminat
+            )
+            book.save()
+
+        # Obtenim l'usuari actual i li assignem al have
+        custom_user = User.objects.get(auth_user=self.request.user)
+
+        # Comprovar si ja existeix un have per aquest usuari i llibre
+        existing_have = Have.objects.filter(user=custom_user, book=book).first()
+
+        if existing_have:
+            # Actualitzar l'estat si ja existeix
+            existing_have.status = form.cleaned_data['status']
+            existing_have.save()
+        else:
+            # Crear un nou have
+            have = form.save(commit=False)
+            have.user = custom_user
+            have.book = book
+            have.save()
+
+        return redirect(self.success_url)
