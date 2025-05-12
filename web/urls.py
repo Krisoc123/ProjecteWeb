@@ -15,7 +15,7 @@ urlpatterns = [
     path('trending/', views.trending_view, name='trending'),
     path('books/entry/<ISBN>/', views.book_entry ,name='book-entry'),
     path('wishlist/', views.wishlist_view ,name='wishlist'),
-    path('shelve/', views.shelve_view ,name='shelve'),
-    path('book-trade/<ISBN>', views.book_trade_view ,name='book-trade'),
+    path('havelist/', views.havelist_view ,name='havelist'),
+    path('books/trade/', views.book_trade_view ,name='book-trade'),
     path('books/buy/', views.book_buy_view ,name='book-buy'),
 ]

@@ -275,9 +275,14 @@ def book_entry(request,ISBN):
     mybook = Book.objects.get(ISBN=ISBN)
     return  render(request,'book-entry.html', {'mybook': mybook})
 
-def book_trade_view(request, ISBN):
-    mybook = Book.objects.get(ISBN=ISBN)
-    return render(request, 'book-trade.html', {'mybook': mybook})
+def book_trade_view(request):
+    return render(request, 'trade_form.html')
 
 def book_buy_view(request):
-    return  render(request,'book-buy.html')
+    return  render(request, 'buy_form.html')
+
+def wishlist_view(request):
+    return render(request, 'wishlist.html')
+
+def havelist_view(request):
+    return render(request, 'havelist.html')

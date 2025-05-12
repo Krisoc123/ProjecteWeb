@@ -26,10 +26,10 @@
             </div>
         </div>
         <div class="buttons-container">
-            <a href="{% url 'shelve' %}" class="button"> Add to my Shelve </a>
-            <a href="{% url 'wishlist' %}" class="button"> Add to Wishlist </a>
-            <a href="book-trade/{{ mybook.ISBN }}" class="button"> Look for a trade </a>
-            <a href="{% url 'book-buy ' %}" class="button"> Look for a trade </a>
+            <a href="{% url 'add_to_havelist' %}" class="button"> Add to my Havelist </a>
+            <a href="{% url 'add_to_wishlist' %}" class="button"> Add to my Wishlist </a>
+            <a href="{% url 'book-trade' %}" class="button"> Look for a trade </a>
+            <a href="{% url 'book-buy ' %}" class="button"> Buy this book </a>
         </div>
      {% endblock %}
  <script>
