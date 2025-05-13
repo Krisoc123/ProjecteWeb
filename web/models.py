@@ -25,6 +25,8 @@ class User(models.Model):
     name = models.CharField(max_length=255, default="Anonymous")
     email = models.EmailField(unique=True)
     joined_date = models.DateTimeField(auto_now_add=True)
+    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    description = models.TextField(blank=True, default="")
 
     def __str__(self):
         return self.name

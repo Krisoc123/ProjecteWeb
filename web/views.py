@@ -270,11 +270,53 @@ class CreateHaveView(LoginRequiredMixin, CreateView):
             have.save()
 
         return redirect(self.success_url)
-
-def book_entry(request,ISBN):
-    mybook = Book.objects.get(ISBN=ISBN)
-    return  render(request,'book-entry.html', {'mybook': mybook})
-
+def book_entry(request, ISBN):
+    try:
+        # Primero intenta encontrar el libro en la base de datos local
+        mybook = Book.objects.get(ISBN=ISBN)
+        is_local = True
+        
+    except Book.DoesNotExist:
+        # Si no existe localmente, buscar en fuentes externas (Google Books)
+        mybook = None
+        is_local = False
+        
+        try:
+            api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{ISBN}"
+            response = requests.get(api_url)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('items'):
+                    # Tomar el primer resultado que coincida con el ISBN
+                    item = data['items'][0]
+                    volume_info = item.get('volumeInfo', {})
+                    
+                    # Crear un "libro virtual" con los mismos campos que el modelo Book
+                    mybook = {
+                        'ISBN': ISBN,
+                        'title': volume_info.get('title', 'Unknown Title'),
+                        'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
+                        'topic': volume_info.get('categories', ['General'])[0] if volume_info.get('categories') else 'General',
+                        'publish_date': volume_info.get('publishedDate', ''),
+                        'description': volume_info.get('description', ''),
+                        'thumbnail_url': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+                        'external_link': volume_info.get('infoLink', ''),
+                        'source': 'Google Books'
+                    }
+        except Exception as e:
+            print(f"Error fetching book from API: {e}")
+    
+    if not mybook:
+        messages.error(request, "Book not found in our database or external sources.")
+        return redirect('books')
+    
+    # Pasar a la plantilla tanto el libro como un indicador de si es local o externo
+    return render(request, 'book-entry.html', {
+        'mybook': mybook,
+        'is_local': is_local
+    })
+    
 def book_trade_view(request):
     return render(request, 'trade_form.html')
 
