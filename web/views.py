@@ -286,3 +286,33 @@ def wishlist_view(request):
 
 def havelist_view(request):
     return render(request, 'havelist.html')
+
+def trade_form(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    users = User.objects.filter(have__book=book)  # Ajusta según tu modelo "Have"
+
+    if request.method == 'POST':
+        selected_user_id = request.POST.get('selected_user')
+        if selected_user_id:
+            selected_user = get_object_or_404(User, id=selected_user_id)
+        
+            Exchange.objects.create(
+                user1=request.user.custom_user,  # Usuario actual
+                user2=selected_user,
+                book1=book,
+                book2=None,  # Si es un intercambio de un solo libro
+                location=request.user.custom_user.location,
+                status='proposed'
+            )
+            
+    
+            messages.success(request, f"Intercanvi confirmat amb {selected_user.name}!")
+            return redirect('trade_success') 
+        else:
+            messages.error(request, "Has de seleccionar un usuari per confirmar l'intercanvi.")
+
+    return render(request, 'trade_form.html', {'users': users, 'book': book})
+
+def trade_success(request):
+    return render(request, 'trade_success.html')
+

@@ -106,3 +106,4 @@ class Exchange(models.Model):
 
     def __str__(self):
         return f"Exchange between {self.user1.name} and {self.user2.name} (Status: {self.status})"
+

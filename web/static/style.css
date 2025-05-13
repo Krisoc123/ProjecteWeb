@@ -608,3 +608,43 @@ footer {
 {
     padding: 500px 10px 10px 75px;
 }
+.exchange-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    background-color: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.exchange-container h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.exchange-container p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+.user-list li {
+    margin-bottom: 1rem;
+}
+
+.user-list label {
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.exchange-form input[type="radio"] {
+    margin-right: 0.5rem;
+}
