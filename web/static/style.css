@@ -638,3 +638,333 @@ footer {
     color: #3498db;
     margin-bottom: 20px;
 }
+
+/* Notificación de libros externos */
+.external-book-notice {
+    background-color: #fff;
+    border-left: 4px solid #3498db;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.external-book-notice .notice {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.add-to-database-button {
+    background-color: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.add-to-database-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.add-to-database-button:active {
+    transform: translateY(0);
+}
+
+/* Sección de reseñas */
+.reviews-section {
+    margin-top: 2.5rem;
+    padding: 1.75rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.reviews-section h2 {
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.75rem;
+    font-size: 1.4rem;
+}
+
+.add-review {
+    margin-bottom: 1.75rem;
+}
+
+.review-button {
+    background-color: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.review-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.review-button:active {
+    transform: translateY(0);
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.review-card {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s;
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.75rem;
+}
+
+.review-author {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+.review-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.review-edit, .review-delete {
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.review-edit {
+    color: #3498db;
+}
+
+.review-delete {
+    color: #e74c3c;
+}
+
+.review-edit:hover, .review-delete:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.review-content {
+    line-height: 1.6;
+    color: #333;
+    font-size: 1rem;
+}
+
+.no-reviews {
+    color: #7f8c8d;
+    font-style: italic;
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+/* Formularios de reseña */
+.form-container {
+    max-width: 800px;
+    margin: 2.5rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h1 {
+    margin-bottom: 1.75rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.75rem;
+    font-size: 1.6rem;
+}
+
+.form-group {
+    margin-bottom: 1.75rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.65rem;
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.form-group textarea {
+    width: 100%;
+    height: 150px;
+    padding: 0.85rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-group textarea:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.form-errors {
+    color: #e74c3c;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submit-button {
+    background-color: #3498db;
+    color: white;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.cancel-button {
+    background-color: #95a5a6;
+    color: white;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    text-decoration: none;
+}
+
+.delete-button {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.cancel-button:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-2px);
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.submit-button:active,
+.cancel-button:active,
+.delete-button:active {
+    transform: translateY(0);
+}
+
+/* Página de confirmación de eliminación */
+.delete-confirmation {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.delete-confirmation h1 {
+    margin-bottom: 1.5rem;
+    color: #e74c3c;
+    font-size: 1.8rem;
+}
+
+.delete-confirmation p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-container, .delete-confirmation {
+        max-width: 95%;
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .review-card {
+        padding: 1rem;
+    }
+
+    .review-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .review-actions {
+        margin-top: 0.5rem;
+    }
+}
