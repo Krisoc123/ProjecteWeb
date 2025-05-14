@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Review - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>{{ action }} Review for "{{ book.title }}"</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_text">Your Review:</label>
+            {{ form.text }}
+            {% if form.text.errors %}
+                <div class="form-errors">
+                    {{ form.text.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button submit-button">{{ action }} Review</button>
+            <a href="{% url 'book-entry' book.ISBN %}" class="button cancel-button">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
