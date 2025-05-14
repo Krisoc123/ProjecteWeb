@@ -1,5 +1,4 @@
-from django.db import migrations, models
-
+from django.db import migrations
 
 class Migration(migrations.Migration):
 
@@ -8,12 +7,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            "ALTER TABLE web_have ADD COLUMN status VARCHAR(20) DEFAULT 'used';",
-            "ALTER TABLE web_have DROP COLUMN status;"
-        ),
-        migrations.RunSQL(
-            "ALTER TABLE web_have ADD COLUMN points INTEGER DEFAULT 99;",
-            "ALTER TABLE web_have DROP COLUMN points;"
-        ),
+        # No operations - esta migración se dejará vacía
+        # porque las columnas ya existen en la base de datos
     ]
