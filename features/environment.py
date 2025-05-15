@@ -1,54 +1,42 @@
-import os
-import threading
-import time
-import subprocess
-from wsgiref import simple_server
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ProjecteWeb.settings')
-import django
-django.setup()
-
-from django.core.management import call_command
-from django.urls import reverse
 from splinter.browser import Browser
-from django.test.testcases import LiveServerTestCase
-from django.test.runner import DiscoverRunner
-
-def django_test_server():
-    """Inicia el servidor Django per a les proves"""
-    process = subprocess.Popen(
-        ["python", "manage.py", "runserver", "--noreload"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-    return process
+from selenium.webdriver.chrome.options import Options
+import os
+import datetime
+from pathlib import Path
 
 def before_all(context):
-    # Iniciar el servidor Django en un subprocés
-    context.server_process = django_test_server()
-    time.sleep(2)  # Donar temps al servidor per iniciar-se
+    chrome_options = Options()
+    # Headless mode is required in Docker
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--window-size=1920,1080')
+    context.browser = Browser('chrome', options=chrome_options)
+    context.browser.driver.set_page_load_timeout(60)  # Increased timeout
+    context.browser.driver.implicitly_wait(15)  # Increased wait time
     
-    # Iniciar el navegador
-    context.browser = Browser('chrome', headless=True)
-    
-    # Configurar la funció get_url
-    context.base_url = "http://localhost:8000"
-    context.get_url = lambda path: f"{context.base_url}{path}"
-    
-    # Inicialitzar la base de dades
-    # call_command('flush', interactive=False, verbosity=0)
+    # Create screenshots directory if it doesn't exist
+    context.screenshots_dir = Path(__file__).parent / "screenshots"
+    context.screenshots_dir.mkdir(exist_ok=True)
 
 def after_all(context):
-    # Tancar el navegador
     context.browser.quit()
     context.browser = None
-    
-    # Tancar el servidor Django
-    if hasattr(context, 'server_process'):
-        context.server_process.terminate()
-        context.server_process.wait()
-    
+
 def before_scenario(context, scenario):
-    # Opcional: Reiniciar la BD entre escenaris
-    # call_command('flush', interactive=False, verbosity=0)
-    pass
+    # Reset the browser before each scenario
+    context.browser.cookies.delete()
+
+def after_step(context, step):
+    # Take a screenshot if step fails
+    if step.status == "failed":
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"{timestamp}_{step.name}.png"
+        filepath = context.screenshots_dir / filename
+        context.browser.screenshot(str(filepath))
+        print(f"Screenshot saved to {filepath}")
+
+def after_scenario(context, scenario):
+    # Log out after each scenario to ensure clean state
+    context.browser.visit(context.get_url('/logout/'))

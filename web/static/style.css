@@ -734,7 +734,7 @@ footer {
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 10;
-    position: relative; /* Canviat de absolute a relative */
+    text-decoration: none; /* Assegurar que l'enllaç no té subratllat */
 }
 
 .love-button:hover {
@@ -749,8 +749,8 @@ footer {
     stroke-width: 2;
     min-width: 20px !important;
     min-height: 20px !important;
-    position: relative; /* Canviat de absolute a relative */
     z-index: 11;
+    pointer-events: none; /* Permet que els clics "passin a través" del SVG fins a l'enllaç */
 }
 
 .love-button.active svg {
@@ -771,7 +771,7 @@ footer {
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 10;
-    position: relative; /* Canviat de absolute a relative */
+    text-decoration: none; /* Assegurar que l'enllaç no té subratllat */
 }
 
 .have-button:hover {
@@ -786,8 +786,8 @@ footer {
     stroke-width: 2;
     min-width: 20px !important;
     min-height: 20px !important;
-    position: relative; /* Canviat de absolute a relative */
     z-index: 11;
+    pointer-events: none; /* Permet que els clics "passin a través" del SVG fins a l'enllaç */
 }
 
 .have-button.active svg {
