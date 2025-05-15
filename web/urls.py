@@ -1,5 +1,8 @@
+from django.conf.urls.static import static
 from django.urls import path
 from django.contrib.auth import views as auth_views
+
+from ProjecteWeb import settings
 from . import views
 
 urlpatterns = [
@@ -8,7 +11,8 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
     path('books/', views.books, name='books'),
-    path('accounts/profile/', views.profile_view, name='profile'),
+    path('profile/', views.profile_view, name='profile'),
+    path('edit_profile/', views.editar_perfil, name='edit_profile'),
     path('add-to-wishlist/', views.CreateWantView.as_view(), name='add_to_wishlist'),
     path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist'),
 
@@ -18,4 +22,7 @@ urlpatterns = [
     path('havelist/', views.havelist_view ,name='havelist'),
     path('trade/', views.book_trade_view ,name='book-trade'),
     path('buy/', views.book_buy_view ,name='book-buy'),
+
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,15 +1,16 @@
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import transaction
+from django.contrib.auth.models import User as AuthUser
 from .models import User as CustomUser, Want, Book, Have
+from .models import User
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     location = forms.CharField(required=False, max_length=255)
     """ class Meta: is used to define the model and fields for the form """
     class Meta:
-        model = User
+        model = AuthUser  # Usar el modelo User de Django
         fields = ('username', 'email', 'password1', 'password2')
     
     @transaction.atomic
@@ -21,9 +22,16 @@ class CustomUserCreationForm(UserCreationForm):
         
         if commit:
             user.save()
-            # La señal post_save creará el CustomUser, pero podemos actualizarlo con campos adicionales
-            if hasattr(user, 'custom_user'):
-                custom_user = user.custom_user
+            # Crear o actualizar el usuario personalizado
+            custom_user, created = CustomUser.objects.get_or_create(
+                auth_user=user,
+                defaults={
+                    'name': user.username,
+                    'email': user.email,
+                    'location': self.cleaned_data.get('location', '')
+                }
+            )
+            if not created:
                 custom_user.location = self.cleaned_data.get('location', '')
                 custom_user.save()
         return user
@@ -31,6 +39,16 @@ class CustomUserCreationForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser   # Your custom User model, not Django's built-in User
+        fields = ('name', 'location', 'description', 'profile_image')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
 
 class WantForm(forms.ModelForm):
     priority = forms.IntegerField(

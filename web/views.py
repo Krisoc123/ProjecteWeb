@@ -9,6 +9,8 @@ from django.views.generic.edit import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
+from .forms import UserProfileForm
+
 import datetime
 
 import requests
@@ -81,7 +83,20 @@ def profile_view(request):
             'email': request.user.email
         }
     )
-    
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
+        custom_user.profile_picture = request.FILES['profile_picture']
+        custom_user.save()
+        return redirect('profile')
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=custom_user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=custom_user)
+
     # Now use custom_user for your queries
     have_list = Have.objects.filter(user=custom_user)
     want_list = Want.objects.filter(user=custom_user)
@@ -101,7 +116,18 @@ def profile_view(request):
     
     return render(request, 'profile.html', context)
 
+@login_required
+def editar_perfil(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # O como se llame tu vista de perfil
+    else:
+        form = UserProfileForm(instance=user)
 
+    return render(request, 'editar_perfil.html', {'form': form})
 
 def books(request):
     # Obtenim els paràmetres de cerca
