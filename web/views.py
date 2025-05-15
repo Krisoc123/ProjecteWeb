@@ -139,12 +139,19 @@ def books(request):
                     print(f"Resultats obtinguts: {len(data.get('items', []))}")  # Logging
                     for item in data.get('items', []):
                         volume_info = item.get('volumeInfo', {})
+
+                        isbn = ''
+                        for identifier in volume_info.get('industryIdentifiers', []):
+                            if identifier.get('type') in ['ISBN_10', 'ISBN_13']:
+                                isbn = identifier.get('identifier', '')
+                                break
+
                         external_books.append({
                             'title': volume_info.get('title', 'Unknown Title'),
                             'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
                             'description': volume_info.get('description', ''),
                             'thumbnail_url': volume_info.get('imageLinks', {}).get('thumbnail', ''),
-                            'isbn': volume_info.get('industryIdentifiers', [{}])[0].get('identifier', ''),
+                            'ISBN': isbn,
                             'external_link': volume_info.get('infoLink', ''),
                             'source': 'Google Books'
                         })
