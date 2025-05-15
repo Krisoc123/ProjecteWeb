@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 
 from ProjecteWeb import settings
 from . import views
+from .views import ReviewCreateView, ReviewUpdateView, ReviewDeleteView
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -15,9 +16,11 @@ urlpatterns = [
     path('edit_profile/', views.editar_perfil, name='edit_profile'),
     path('add-to-wishlist/', views.CreateWantView.as_view(), name='add_to_wishlist'),
     path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist'),
-
     path('trending/', views.trending_view, name='trending'),
     path('books/entry/<ISBN>/', views.book_entry ,name='book-entry'),
+    path('book/<str:isbn>/review/new/', ReviewCreateView.as_view(), name='review-create'),
+    path('review/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'),
+    path('review/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review-delete'),
     path('wishlist/', views.wishlist_view ,name='wishlist'),
     path('havelist/', views.havelist_view ,name='havelist'),
     path('trade/', views.book_trade_view ,name='book-trade'),
