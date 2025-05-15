@@ -423,6 +423,16 @@ footer {
     object-fit: contain;
 }
 
+.book-cover-entry img {
+    max-height: 240px;
+    max-width: 160px;
+    min-height: 120px;
+    min-width: 80px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    object-fit: contain;
+}
+
 .book-card h3 {
     margin: 10px 0 5px;
     font-size: 18px;
