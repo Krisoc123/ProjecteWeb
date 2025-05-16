@@ -27,15 +27,33 @@ def after_all(context):
 def before_scenario(context, scenario):
     # Reset the browser before each scenario
     context.browser.cookies.delete()
+    
+    # Create test books for book card tests
+    # Aquest és el codi que faltava per crear els llibres de test
+    if 'book_card' in scenario.feature.name.lower():
+        from django.utils import timezone
+        from web.models import Book
 
-def after_step(context, step):
-    # Take a screenshot if step fails
-    if step.status == "failed":
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"{timestamp}_{step.name}.png"
-        filepath = context.screenshots_dir / filename
-        context.browser.screenshot(str(filepath))
-        print(f"Screenshot saved to {filepath}")
+        # Comprova si els llibres ja existeixen
+        if not Book.objects.filter(ISBN="1234567890").exists():
+            Book.objects.create(
+                ISBN="1234567890",
+                title="Test Book",
+                author="Test Author",
+                topic="Test Topic",
+                publish_date=timezone.now().date(),
+                base_price=10
+            )
+        
+        if not Book.objects.filter(ISBN="9876543210").exists():
+            Book.objects.create(
+                ISBN="9876543210",
+                title="Another Book",
+                author="Another Author",
+                topic="Novel·la",
+                publish_date=timezone.now().date(),
+                base_price=15
+            )
 
 def after_scenario(context, scenario):
     # Log out after each scenario to ensure clean state

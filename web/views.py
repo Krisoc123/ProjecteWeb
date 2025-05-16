@@ -108,8 +108,7 @@ def profile_view(request):
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {
-        'django_user': request.user,
-        'user': custom_user,
+        'custom_user': custom_user,  # Canviem el nom de la variable per evitar conflicte
         'have_list': have_list,
         'want_list': want_list,
         'exchanges_list': exchanges_list,

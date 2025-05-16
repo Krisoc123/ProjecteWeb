@@ -180,6 +180,12 @@ Aquestes funcionalitats d'autocompletat s'integren en el nostre formulari de cer
 
 ![](https://i.imgur.com/ZzxEbjl.png)
 
+
+També s'ha fet ús de la API de Google Books per  l'obtenció de la informació dels llibres, com el títol, l'autor i l'ISBN, es pot veure tota aquesta informació a la pàgina de detalls del llibre (`book-entry.html`), on es mostra el títol, l'autor i l'ISBN del llibre seleccionat. 
+
+També s'ha utilitzat la API de Google Books per aconseguir la imatge de portada de tots els llibres, que es mostra a la pàgina de llibres (`books.html`) i a la pàgina de detalls del llibre (`book-entry.html`). També a la llista de llibres de la WishList i HaveList que es poden veure a la (`profile.html`).
+
+
 # 2. Creació d'instàncies
 S'han implementat diverses funcionalitats on es creen instàncies a la base de dades, a continuació s'explica detalladament la creació d'instàncies en les relacions `Have` i `Want` (WishList) del model relacional.
 Aquestes funcionalitats es poden trobar a `books.html` i `book-entry.html`, on es troben els botons pertinents. S'han utilitzat Class-Based Views i ModelForms per a la creació, actualització i eliminació d'instàncies a la base de dades.
@@ -645,6 +651,10 @@ def get_success_url(self):
     return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
 ```
 
+Un altre cas d'eliminació és quan un usuari intenta eliminar un llibre de la seva WishList o HaveList. Els botons d'eliminació es troben a la pàgina (`profile.html`) i funcionen de manera similar a les ressenyes. Quan l'usuari fa clic al botó d'eliminació, però en aquest cas no es demana confirmació. S'esborrarà la instància de la base de dades de la relació (Want o Have) que relaciona l'usuari amb el llibre.
+
+![](https://i.imgur.com/NedaW9u.png)
+
 ### Tests d'Eliminació (`delete_reviews.feature`)
 
 ```gherkin
@@ -713,6 +723,12 @@ def step_impl(context, count, isbn):
     assert count == actual_count
 ```
 Aquest es només un resum de tot el que s'ha testejat i implementat.
+
+Per executar els tests, cal executar la següent comanda:
+
+```bash
+docker-compose run --rm web python manage.py behave
+```
 
 # 5. Model relacional
 Respecte al model relacional, dissenyat en la primera entrega, hem mantingut totes les relacions. Només s'ha afegit a la classe `Have` un nou camp `status` que permet identificar l'estat del llibre (nou, usat o danyat) i a la classe `User` un nou camp `profile_picture` que permet identificar la imatge de perfil de l'usuari i un camp `description` que permet identificar la descripció de l'usuari.

@@ -376,3 +376,28 @@ def step_impl(context):
     submit_button.click()
     
     time.sleep(3)
+
+@when('I visit the profile page')
+def step_impl(context):
+    context.browser.visit(context.get_url('profile'))
+    time.sleep(1)
+
+@then('I can see the book with title "{title}" in my havelist')
+def step_impl(context, title):
+    book_elements = context.browser.find_by_xpath(f'//h2[text()="Books You Have"]/following-sibling::div//p[contains(@class, "book-title") and contains(text(), "{title}")]')
+    assert len(book_elements) > 0, f"No book with title '{title}' found in havelist"
+
+@then('I can see the book with title "{title}" in my wishlist')
+def step_impl(context, title):
+    book_elements = context.browser.find_by_xpath(f'//h2[text()="Books You Want"]/following-sibling::div//p[contains(@class, "book-title") and contains(text(), "{title}")]')
+    assert len(book_elements) > 0, f"No book with title '{title}' found in wishlist"
+
+@then('I can see the profile picture upload option')
+def step_impl(context):
+    assert context.browser.is_element_present_by_id('id_profile_picture'), "Profile picture upload option not found"
+    assert context.browser.find_by_css('.profile-picture-wrapper').first is not None, "Profile picture wrapper not found"
+
+@then('I can see delete buttons for books in my lists')
+def step_impl(context):
+    delete_buttons = context.browser.find_by_css('.delete-book-icon')
+    assert len(delete_buttons) > 0, "No delete buttons found for books in lists"

@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-<body>
+
 {% block content %}
-<h1>{{ user.name}}'s Profile</h1>
+<h1>{{ custom_user.name}}'s Profile</h1>
 
 <!-- Basic Info -->
 <div class="profile-content" style="display: flex; gap: 2rem; align-items: flex-start;">
@@ -15,11 +13,11 @@
       <form method="post" enctype="multipart/form-data" id="profile-picture-form">
         {% csrf_token %}
         <div class="profile-picture-wrapper" title="Click to change photo">
-          {% if user.profile_picture %}
-            <img src="{{ user.profile_picture.url }}" alt="Profile picture" class="profile-picture">
+          {% if custom_user.profile_picture %}
+            <img src="{{ custom_user.profile_picture.url }}" alt="Profile picture" class="profile-picture">
           {% else %}
             <div class="profile-picture-placeholder">
-              <span>{{ user.name|first }}</span>
+              <span>{{ custom_user.name|first }}</span>
             </div>
           {% endif %}
           <div class="edit-icon">
@@ -30,11 +28,11 @@
       </form>
     </div>
 
-    <h2 class="profile-name">{{ user.name }}</h2>
+    <h2 class="profile-name">{{ custom_user.name }}</h2>
 
     <div class="profile-info">
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Location:</strong> {{ user.location }}</p>
+      <p><strong>Email:</strong> {{ custom_user.email }}</p>
+      <p><strong>Location:</strong> {{ custom_user.location }}</p>
     </div>
   </div>
 
@@ -143,7 +141,6 @@
   <span class="message">Book successfully deleted</span>
 </div>
 </div>
-</body>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const wrapper = document.querySelector('.profile-picture-wrapper');
@@ -200,5 +197,4 @@
           });
         });
     </script>
-
 {% endblock %}
