@@ -4,9 +4,10 @@
 
 El codi corresponent a aquesta entrega serà el que es troba a la branca `main` del repositori.
 
+**Admin user:** amarin
+**Password:** webproject
+
 # 1. Autocompletat amb AJAX i l'API de Google Books
-
-
 
 En el nostre projecte d'intercanvi de llibres, hem implementat una funcionalitat d'autocompletat que utilitza AJAX (Asynchronous JavaScript and XML) per fer consultes en temps real a l'API de Google Books, proporcionant suggeriments mentre l'usuari escriu en els camps del formulari.
 
@@ -655,6 +656,13 @@ Un altre cas d'eliminació és quan un usuari intenta eliminar un llibre de la s
 
 ![](https://i.imgur.com/NedaW9u.png)
 
+Per últim, també trobem dos casos d'eliminació en l'intercanvi de llibres, ja que per el *swap* de llibres, es borra el registre de `Have` i s'afegeix un nou registre amb el nou llibre. 
+
+
+![](https://i.imgur.com/MTOJr8g.png)
+
+
+
 ### Tests d'Eliminació (`delete_reviews.feature`)
 
 ```gherkin
@@ -735,6 +743,11 @@ Respecte al model relacional, dissenyat en la primera entrega, hem mantingut tot
 
 # 6. Implementacions futures restants
 Tot i que, la implementació actual, compleix, en principi, amb els requisits de l'enunciat, hi ha algunes funcionalitats que caldria dissenyar i implementar per tal de donar sentit al projecte. 
+
 - Caldria establir algun sistema per fixar els preus dels llibres (punts), en funció de l'estat del llibre, el preu base segons alguna API externa o la data de publicació.
+
 - També caldria millorar la gestió dels intercanvis, utilitzant la ubicació dels usuaris per tal de facilitar l'intercanvi físic dels llibres.
+
 - Afegir algun pas més en l'establiment del intercanvi, com per exemple un xat, o alguna comunicació entre els usuaris per tal de pactar la data i hora de la trobada.
+
+- També caldrà implementar degudament l'opció de compra per punts, que actualment no és funcional.

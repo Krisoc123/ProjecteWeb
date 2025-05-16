@@ -1,8 +1,12 @@
+from django.utils import timezone
+from web.models import Book
 from splinter.browser import Browser
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException
 import os
 import datetime
 from pathlib import Path
+import time
 
 def before_all(context):
     chrome_options = Options()
@@ -19,6 +23,39 @@ def before_all(context):
     # Create screenshots directory if it doesn't exist
     context.screenshots_dir = Path(__file__).parent / "screenshots"
     context.screenshots_dir.mkdir(exist_ok=True)
+    
+    # Add a safe click method to context
+    def safe_click(element):
+        try:
+            element.scroll_to()
+            element.click()
+            return True
+        except (ElementClickInterceptedException, ElementNotInteractableException):
+            try:
+                context.browser.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element._element)
+                time.sleep(0.5)
+                element.click()
+                return True
+            except Exception:
+                try:
+                    context.browser.execute_script("arguments[0].click();", element._element)
+                    return True
+                except Exception:
+                    try:
+                        context.browser.execute_script("""
+                            document.querySelectorAll('footer, .footer, [data-testid="footer"]').forEach(e => {
+                                e.style.display = 'none';
+                                e.style.pointerEvents = 'none';
+                            });
+                        """)
+                        time.sleep(0.5)
+                        context.browser.execute_script("arguments[0].click();", element._element)
+                        return True
+                    except Exception:
+                        return False
+    
+    context.safe_click = safe_click
+
 
 def after_all(context):
     context.browser.quit()
@@ -31,8 +68,6 @@ def before_scenario(context, scenario):
     # Create test books for book card tests
     # Aquest és el codi que faltava per crear els llibres de test
     if 'book_card' in scenario.feature.name.lower():
-        from django.utils import timezone
-        from web.models import Book
 
         # Comprova si els llibres ja existeixen
         if not Book.objects.filter(ISBN="1234567890").exists():

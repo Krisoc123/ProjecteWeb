@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, models
 
 
 from django.views.decorators.http import require_POST
@@ -396,7 +396,60 @@ def book_entry(request, ISBN):
     })
 
 def book_trade_view(request):
-    return render(request, 'trade_form.html')
+    """Show a list of books available for trading."""
+    # Get the current user's custom_user
+    if hasattr(request.user, 'custom_user'):
+        current_user = request.user.custom_user
+    else:
+        # If the custom_user doesn't exist and the user is authenticated, create it
+        if request.user.is_authenticated:
+            current_user, created = User.objects.get_or_create(
+                auth_user=request.user,
+                defaults={
+                    'name': request.user.username,
+                    'email': request.user.email
+                }
+            )
+        else:
+            current_user = None
+    
+    # Get books that have at least one owner (excluding the current user)
+    available_books = []
+    
+    # If user is logged in, we can exclude their books
+    if current_user:
+        # Find books that other users have
+        have_objects = Have.objects.exclude(user=current_user).select_related('book', 'user')
+        # Group by book to get books with at least one owner
+        book_owners = {}
+        for have in have_objects:
+            if have.book not in book_owners:
+                book_owners[have.book] = []
+            book_owners[have.book].append(have.user)
+        
+        # Convert to list of books with owner count
+        for book, owners in book_owners.items():
+            available_books.append({
+                'book': book,
+                'owner_count': len(owners)
+            })
+    else:
+        # For non-logged in users, show all books that have owners
+        have_objects = Have.objects.select_related('book').values('book').annotate(owner_count=models.Count('user'))
+        for item in have_objects:
+            book = Book.objects.get(ISBN=item['book'])
+            available_books.append({
+                'book': book,
+                'owner_count': item['owner_count']
+            })
+    
+    # Sort by owner count (most popular first)
+    available_books.sort(key=lambda x: x['owner_count'], reverse=True)
+    
+    # Render the trade book list template
+    return render(request, 'trade_book_list.html', {
+        'available_books': available_books
+    })
 
 def sale_detail(request, ISBN):
     mybook = get_object_or_404(Book, ISBN=ISBN)
@@ -540,30 +593,143 @@ class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return context
 
 def trade_form(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
-    users = User.objects.filter(have__book=book)  # Ajusta según tu modelo "Have"
+    try:
+        book = Book.objects.get(ISBN=book_id)
+    except Book.DoesNotExist:
+        messages.error(request, f"Book with ISBN {book_id} not found.")
+        return redirect('book-trade')
+    
+    if hasattr(request.user, 'custom_user'):
+        current_user = request.user.custom_user
+    else:
+        current_user, created = User.objects.get_or_create(
+            auth_user=request.user,
+            defaults={
+                'name': request.user.username,
+                'email': request.user.email
+            }
+        )
+    
+    have_objects = Have.objects.filter(book=book).exclude(user=current_user).select_related('user')
+    
+    unique_users = {}
+    for have in have_objects:
+        if have.user.userId not in unique_users:
+            unique_users[have.user.userId] = have.user
+    
+    users = list(unique_users.values())
+    
+    all_have_objects = Have.objects.filter(book=book).select_related('user')
+    print(f"[DEBUG] Total Have objects for this book: {all_have_objects.count()}")
+    for have in all_have_objects:
+        print(f"[DEBUG] Have object: {have.user.name} (ID: {have.user.userId}) (is current user? {have.user.userId == current_user.userId})")
 
+    context = {
+        'users': users,
+        'book': book,
+        'selected_user_id': None,
+        'user_books': []
+    }
+    
     if request.method == 'POST':
         selected_user_id = request.POST.get('selected_user')
-        if selected_user_id:
-            selected_user = get_object_or_404(User, id=selected_user_id)
-
-            Exchange.objects.create(
-                user1=request.user.custom_user,  # Usuario actual
-                user2=selected_user,
-                book1=book,
-                book2=None,  # Si es un intercambio de un solo libro
-                location=request.user.custom_user.location,
-                status='proposed'
-            )
-
-
-            messages.success(request, f"Intercanvi confirmat amb {selected_user.name}!")
-            return redirect('trade_success')
+        selected_book_id = request.POST.get('selected_book')
+        
+        print(f"[DEBUG] Selected user ID: {selected_user_id}, Selected book ID: {selected_book_id}")
+        
+        if selected_user_id and not selected_book_id:
+            try:
+                selected_user = get_object_or_404(User, userId=selected_user_id)
+                print(f"[DEBUG] Found selected user: {selected_user.name}")
+                
+                user_have_objects = Have.objects.filter(user=selected_user).select_related('book')
+                user_books = [have.book for have in user_have_objects]
+                
+                if not user_books:
+                    messages.warning(request, f"{selected_user.name} no té llibres disponibles per intercanviar.")
+                
+                context['selected_user_id'] = selected_user_id
+                context['user_books'] = user_books
+                context['selected_user'] = selected_user
+                
+                return render(request, 'trade_form.html', context)
+            
+            except Exception as e:
+                print(f"[DEBUG] Error loading user books: {str(e)}")
+                messages.error(request, f"Error en carregar els llibres de l'usuari: {str(e)}")
+        
+        elif selected_user_id and selected_book_id:
+            try:
+                selected_user = get_object_or_404(User, userId=selected_user_id)
+                print(f"[DEBUG] Selected book ID: '{selected_book_id}'")
+                
+                try:
+                    selected_book = Book.objects.get(ISBN=selected_book_id)
+                    print(f"[DEBUG] Found selected book: {selected_book.title}")
+                    
+                    with transaction.atomic():
+                        # Create the exchange record
+                        exchange = Exchange(
+                            user1=current_user,  # Current user
+                            user2=selected_user,
+                            book1=book,
+                            book2=selected_book,
+                            location=current_user.location,
+                            status='accepted'  
+                        )
+                        exchange.save()
+                        
+                        user1_have = Have.objects.filter(user=current_user, book=book).first()
+                        if user1_have:
+                            user1_status = user1_have.status
+                            user1_points = user1_have.points
+                        else:
+                            user1_status = 'used'
+                            user1_points = 10
+                            
+                        user2_have = Have.objects.filter(user=selected_user, book=selected_book).first()
+                        if user2_have:
+                            user2_status = user2_have.status
+                            user2_points = user2_have.points
+                        else:
+                            user2_status = 'used'
+                            user2_points = 10
+                            
+                        # First, delete the original Have records
+                        Have.objects.filter(user=current_user, book=book).delete()
+                        Have.objects.filter(user=selected_user, book=selected_book).delete()
+                        
+                        # Then create new Have records with swapped books
+                        # User1 now has User2's book
+                        Have.objects.create(
+                            user=current_user,
+                            book=selected_book,
+                            status=user2_status,
+                            points=user2_points
+                        )
+                        
+                        # User2 now has User1's book
+                        Have.objects.create(
+                            user=selected_user,
+                            book=book,
+                            status=user1_status,
+                            points=user1_points
+                        )
+                except Book.DoesNotExist:
+                    print(f"[DEBUG] Book with ISBN {selected_book_id} not found")
+                    messages.error(request, f"Book with ISBN {selected_book_id} not found.")
+                    return redirect('book-trade')
+                
+                # Set success message for display
+                messages.success(request, f"Intercanvi confirmat amb {selected_user.name}! El teu llibre '{book.title}' per '{selected_book.title}'")
+                return redirect('trade_success_page')
+            except Exception as e:
+                print(f"[DEBUG] Error processing exchange: {str(e)}")
+                messages.error(request, f"Error en processar l'intercanvi: {str(e)}")
         else:
-            messages.error(request, "Has de seleccionar un usuari per confirmar l'intercanvi.")
+            messages.error(request, "Has de seleccionar un usuari i un llibre per confirmar l'intercanvi.")
 
-    return render(request, 'trade_form.html', {'users': users, 'book': book})
+    return render(request, 'trade_form.html', context)
 
 def trade_success(request):
     return render(request, 'trade_success.html')

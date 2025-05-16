@@ -103,7 +103,7 @@
     <h2>Exchanges</h2>
     <ul>
       {% for exchange in exchanges_list %}
-        <li>Exchange with {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Offered book: {{ exchange.book.title }}</li>
+        <li>Exchange with {{ exchange.user2.name }} – Your book: {{ exchange.book1.title }} for {{ exchange.book2.title }}</li>
       {% empty %}
         <li>You haven't made any exchanges.</li>
       {% endfor %}
@@ -114,7 +114,7 @@
     <h2>Sales and Donations</h2>
     <ul>
       {% for sale in sales_list %}
-        <li>{{ sale.book.title }} – {{ sale.get_type_display }} – {{ sale.price }} €</li>
+        <li>{{ sale.book.title }} – {{ sale.points }} points – Status: {{ sale.status }}</li>
       {% empty %}
         <li>You haven't sold or donated any books.</li>
       {% endfor %}
@@ -126,8 +126,8 @@
     <ul>
       {% for review in reviews_list %}
         <li>
-          <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>: "{{ review.comment }}"<br>
-          Rating: {{ review.rating }}/5
+          <strong>Review for: {{ review.book.title }}</strong><br>
+          Your comment: "{{ review.text }}"
         </li>
       {% empty %}
         <li>You haven't made any review yet.</li>

@@ -101,7 +101,7 @@ class Exchange(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="exchanges_made")
     user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="exchanges_received")
     book1 = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="book_exchanged_by")
-    book2 = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="book_received_as_exchange")
+    book2 = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="book_received_as_exchange", null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     location = models.CharField(max_length=255)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='proposed')

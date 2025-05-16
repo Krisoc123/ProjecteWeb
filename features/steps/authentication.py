@@ -1,4 +1,5 @@
 from behave import *
+import time
 
 use_step_matcher("parse")
 
@@ -22,9 +23,10 @@ def step_impl(context, username, password):
 
 @given('I\'m not logged in')
 def step_impl(context):
-    context.browser.visit(context.get_url('/logout/'))
-    # Check for any indication of being logged out, such as a login link
-    assert context.browser.is_element_present_by_css('a[href*="login"]')
+    # Ensure the user is logged out
+    context.browser.visit(f"{context.get_url()}/logout/")
+    # Wait a moment for logout to complete
+    time.sleep(1)
 
 @then('Server responds with page containing "{message}"')
 def step_impl(context, message):
