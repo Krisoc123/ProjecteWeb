@@ -335,3 +335,120 @@ class Have(models.Model):
 
 En resum, la implementació de WishList i HaveList segueix un flux complet: des del botó a la targeta del llibre, passant per les URLs i vistes, mostrant un formulari adaptat, i finalment processant i emmagatzemant les dades, tot mentre garanteix l'autenticació d'usuaris, la validació de dades i la prevenció de duplicats.
 
+# Actualització de Ressenyes
+
+S'ha implementat la funcionalitat perquè els usuaris puguin modificar les seves pròpies ressenyes, seguint un flux integrat amb les **Class-Based Views** de Django. Aquesta funcionalitat es troba a la pàgina de detalls del llibre (`book-entry.html`), amb enllaços d'edició per a cada ressenya.
+
+## Flux d'Actualització
+1. **Accés des de la UI**:  
+   Els usuaris veuen un enllaç "Edit" a les seves ressenyes.  
+   ```html
+   <!-- A book-entry.html -->
+   {% if review.user.auth_user == request.user %}
+       <a href="{% url 'review-update' review.pk %}" class="edit-link">Edit</a>
+   {% endif %}
+   ```
+2. **Autorització**:  
+   El sistema comprova automàticament que l'usuari és el propietari de la ressenya abans de mostrar el formulari.  
+
+3. **Processament**:  
+   - Es mostra un formulari amb el text actual.  
+   - Les modificacions es validen i persisteixen a la base de dades.  
+
+---
+
+## Components Clau
+
+### 1. Model de Ressenyes (`models.py`)
+```python
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Relació amb CustomUser
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)  # Llibre associat
+    text = models.TextField()  # Contingut de la ressenya
+    date = models.DateTimeField(auto_now_add=True)  # Data de creació automàtica
+```
+- **Relacions**:  
+  - `user`: Connecta amb el model personalitzat d'usuari (`CustomUser`).  
+  - `book`: Vincula la ressenya amb un llibre específic.  
+
+---
+
+### 2. Vista d'Edició (`views.py`)
+```python
+class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Review
+    fields = ['text']  # Camp editable
+    template_name = 'review_form.html'
+
+    # Verifica que l'usuari sigui el propietari
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.user.auth_user  # Comparació amb l'AuthUser
+
+    # Redirecció després de l'èxit
+    def get_success_url(self):
+        return reverse_lazy('book-entry', kwargs={'ISBN': self.object.book.ISBN})
+```
+- **Seguretat**:  
+  - `UserPassesTestMixin`: Bloqueja l'accés si `test_func()` retorna `False`.  
+  - `LoginRequiredMixin`: Requereix autenticació prèvia.  
+
+---
+
+### 3. Template del Formulari (`review_form.html`)
+```html
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Camp de text -->
+    <div class="form-group">
+        <label for="id_text">Your Review:</label>
+        {{ form.text }}  <!-- Textarea amb el contingut actual -->
+        {{ form.text.errors }}  <!-- Errors de validació -->
+    </div>
+
+    <!-- Botons d'acció -->
+    <button type="submit">Update Review</button>
+    <a href="{% url 'book-entry' book.ISBN %}">Cancel</a>
+</form>
+```
+![]() <!-- Primera imagen update -->
+![]()  <!-- Segunda imagen update -->
+
+*Formulari d'edició simplificat amb validació integrada.*
+
+---
+
+### 4. Configuració d'URLs (`urls.py`)
+```python
+path('review/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update')
+```
+- **Paràmetres**:  
+  - `pk`: Identificador únic de la ressenya a editar.  
+
+---
+
+### 5. Tests E2E (`update_reviews.feature`)
+```gherkin
+Scenario: Update my own review
+  Given I login as user "user1"
+  When I edit my review text from "This is a great book!" to "This book is amazing!"
+  Then The review is updated globally
+
+Scenario: Cannot edit another user's review
+  Given I login as user "user2"
+  Then No "Edit" link is visible for "user1"'s review
+```
+- **Cobertura**:  
+  - Actualització vàlida.  
+  - Restriccions d'accés.  
+  - Integritat de dades (eliminació de l'original).  
+
+---
+
+## Integració amb la UI Existents
+- **Enllaç d'Edició**: Visible només per al creador de la ressenya.  
+- **Redirecció Inteligent**: Després de l'actualització, l'usuari retorna a la pàgina del llibre.  
+- **Validació en Temps Real**: Errors de formulari es mostren dinàmicament (p.e., camps buits).  
+
+Aquesta implementació assegura que les ressenyes reflecteixin sempre les opinions actualitzades dels usuaris, mantenint alhora l'integritat i seguretat de les dades. 📚✏️
