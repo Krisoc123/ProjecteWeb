@@ -1,7 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction
+
+
+from django.views.decorators.http import require_POST
+
+
 from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
@@ -9,6 +14,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
+from .forms import UserProfileForm
+
 import datetime
 
 import requests
@@ -79,7 +86,20 @@ def profile_view(request):
             'email': request.user.email
         }
     )
-    
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
+        custom_user.profile_picture = request.FILES['profile_picture']
+        custom_user.save()
+        return redirect('profile')
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=custom_user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=custom_user)
+
     # Now use custom_user for your queries
     have_list = Have.objects.filter(user=custom_user)
     want_list = Want.objects.filter(user=custom_user)
@@ -99,7 +119,38 @@ def profile_view(request):
     
     return render(request, 'profile.html', context)
 
+@require_POST
+@login_required
+def delete_book_from_list(request):
+    isbn = request.POST.get('isbn')
+    list_type = request.POST.get('list_type')
+    custom_user = User.objects.get(auth_user=request.user)
 
+    if list_type == 'have':
+        item = get_object_or_404(Have, user=custom_user, book__ISBN=isbn)
+    elif list_type == 'want':
+        item = get_object_or_404(Want, user=custom_user, book__ISBN=isbn)
+    else:
+        messages.error(request, "Tipo de lista no válido.")
+        return redirect('profile')
+
+    item.delete()
+    messages.success(request, "Libro eliminado correctamente.")
+    return redirect('profile')
+
+
+@login_required
+def editar_perfil(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # O como se llame tu vista de perfil
+    else:
+        form = UserProfileForm(instance=user)
+
+    return render(request, 'editar_perfil.html', {'form': form})
 
 def books(request):
     # Obtenim els paràmetres de cerca
@@ -348,14 +399,53 @@ def book_entry(request, ISBN):
 def book_trade_view(request):
     return render(request, 'trade_form.html')
 
-def book_buy_view(request):
-    return  render(request, 'buy_form.html')
+def sale_detail(request, ISBN):
+    mybook = get_object_or_404(Book, ISBN=ISBN)
+    sale_donations = SaleDonation.objects.filter(book=mybook)
+    user_tokens = User.objects.first().points
+
+    context = {
+        'mybook': mybook,
+        'sale_donations': sale_donations,
+        'user_tokens': user_tokens,
+    }
+    return render(request, 'buy_form.html', context)
+
+
+def get_book(request, offer_id):
+    offer = get_object_or_404(SaleDonation, id=offer_id)
+    buyer = request.user
+
+    if offer.status != 'pending':
+        messages.error(request, "Esta oferta ya ha sido gestionada.")
+        return redirect('home')
+
+    if buyer.points >= offer.points:
+        buyer.points -= offer.points
+        buyer.save()
+
+        # Transfer points to the offering user
+        if offer.user != buyer:
+            offer.user.points += offer.points
+            offer.user.save()
+
+        offer.status = 'completed'
+        offer.save()
+
+        messages.success(request, "Has adquirido el libro correctamente.")
+    else:
+        messages.error(request, "No tienes suficientes puntos para adquirir este libro.")
+
+    return redirect('home')
+
 
 def wishlist_view(request):
     return render(request, 'wishlist.html')
 
 def havelist_view(request):
     return render(request, 'havelist.html')
+
+
 
 # Vista para crear una review
 class ReviewCreateView(LoginRequiredMixin, CreateView):

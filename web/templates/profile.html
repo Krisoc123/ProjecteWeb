@@ -1,169 +1,204 @@
-{% extends 'base.html' %}
-
+<!DOCTYPE html>
+<html lang="en">
+{% extends "base.html" %}
+{% load static %}
+<body>
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <!-- User Info Card -->
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4>{{ user.name }}</h4>
-                </div>
-                <div class="card-body">
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Location:</strong> {{ user.ubication }}</p>
-                    <p><strong>Points:</strong> <span class="badge bg-success">{{ user.points }}</span></p>
-                    <p><strong>Member since:</strong> {{ user.joined_date|date:"F d, Y" }}</p>
-                    <a href="#" class="btn btn-outline-primary">Edit Profile</a>
-                </div>
+<h1>{{ user.name}}'s Profile</h1>
+
+<!-- Basic Info -->
+<div class="profile-content" style="display: flex; gap: 2rem; align-items: flex-start;">
+
+  <!-- Left Section -->
+  <div class="profile-left-section" style="flex: 1; min-width: 250px;">
+    <div class="profile-image-container">
+      <form method="post" enctype="multipart/form-data" id="profile-picture-form">
+        {% csrf_token %}
+        <div class="profile-picture-wrapper" title="Click to change photo">
+          {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="Profile picture" class="profile-picture">
+          {% else %}
+            <div class="profile-picture-placeholder">
+              <span>{{ user.name|first }}</span>
             </div>
+          {% endif %}
+          <div class="edit-icon">
+            <i class="fas fa-pencil-alt"></i>
+          </div>
         </div>
-        
-        <!-- Books and Activities -->
-        <div class="col-md-8">
-            <!-- Tabs for different sections -->
-            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="my-books-tab" data-bs-toggle="tab" data-bs-target="#my-books" type="button" role="tab" aria-controls="my-books" aria-selected="true">My Books</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="wishlist-tab" data-bs-toggle="tab" data-bs-target="#wishlist" type="button" role="tab" aria-controls="wishlist" aria-selected="false">Wishlist</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab" aria-controls="activity" aria-selected="false">Activity</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Reviews</button>
-                </li>
-            </ul>
-            
-            <div class="tab-content p-3 border border-top-0 rounded-bottom" id="profileTabsContent">
-                <!-- My Books Tab -->
-                <div class="tab-pane fade show active" id="my-books" role="tabpanel" aria-labelledby="my-books-tab">
-                    <h5>Books I Own</h5>
-                    {% if tengo_list %}
-                        <div class="row row-cols-1 row-cols-md-3 g-4">
-                            {% for item in tengo_list %}
-                                <div class="col">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">{{ item.book.title }}</h6>
-                                            <p class="card-text">
-                                                <small class="text-muted">{{ item.book.author }}</small><br>
-                                                <small>ISBN: {{ item.book.ISBN }}</small>
-                                            </p>
-                                        </div>
-                                        <div class="card-footer">
-                                            <a href="#" class="btn btn-sm btn-outline-danger">Remove</a>
-                                            <a href="#" class="btn btn-sm btn-outline-success">Offer</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">You don't have any books in your collection yet.</p>
-                        <a href="#" class="btn btn-primary">Add Books</a>
-                    {% endif %}
-                </div>
-                
-                <!-- Wishlist Tab -->
-                <div class="tab-pane fade" id="wishlist" role="tabpanel" aria-labelledby="wishlist-tab">
-                    <h5>Books I Want</h5>
-                    {% if quiero_list %}
-                        <div class="row row-cols-1 row-cols-md-3 g-4">
-                            {% for item in quiero_list %}
-                                <div class="col">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">{{ item.book.title }}</h6>
-                                            <p class="card-text">
-                                                <small class="text-muted">{{ item.book.author }}</small><br>
-                                                <small>ISBN: {{ item.book.ISBN }}</small>
-                                            </p>
-                                            <p>
-                                                <span class="badge bg-info">Priority: {{ item.prioritat }}</span>
-                                            </p>
-                                        </div>
-                                        <div class="card-footer">
-                                            <a href="#" class="btn btn-sm btn-outline-danger">Remove</a>
-                                            <a href="#" class="btn btn-sm btn-outline-primary">Find</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">Your wishlist is empty.</p>
-                        <a href="#" class="btn btn-primary">Browse Books</a>
-                    {% endif %}
-                </div>
-                
-                <!-- Activity Tab -->
-                <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity-tab">
-                    <h5>Recent Activity</h5>
-                    
-                    <div class="list-group">
-                        {% if intercanvis_list or ventas_list %}
-                            {% for intercanvi in intercanvis_list %}
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">Book Exchange</h6>
-                                        <small>{{ intercanvi.date|date:"M d, Y" }}</small>
-                                    </div>
-                                    <p class="mb-1">
-                                        Exchanged "{{ intercanvi.book1.title }}" with {{ intercanvi.user2.name }} 
-                                        for "{{ intercanvi.book2.title }}"
-                                    </p>
-                                    <small>Location: {{ intercanvi.ubication }}</small>
-                                </div>
-                            {% endfor %}
-                            
-                            {% for venta in ventas_list %}
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">{{ venta.points|yesno:"Sale,Donation" }}</h6>
-                                        <small>{{ venta.date|date:"M d, Y" }}</small>
-                                    </div>
-                                    <p class="mb-1">
-                                        {% if venta.points > 0 %}
-                                            Sold "{{ venta.book.title }}" for {{ venta.points }} points
-                                        {% else %}
-                                            Donated "{{ venta.book.title }}"
-                                        {% endif %}
-                                    </p>
-                                    <small>Location: {{ venta.ubication }}</small>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted">No recent activity.</p>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Reviews Tab -->
-                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                    <h5>My Reviews</h5>
-                    
-                    {% if reviews_list %}
-                        <div class="list-group">
-                            {% for review in reviews_list %}
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">{{ review.book.title }}</h6>
-                                        <small>{{ review.date|date:"M d, Y" }}</small>
-                                    </div>
-                                    <p class="mb-1">{{ review.text }}</p>
-                                    <small>ISBN: {{ review.book.ISBN }}</small>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">You haven't written any reviews yet.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display: none;">
+      </form>
     </div>
+
+    <h2 class="profile-name">{{ user.name }}</h2>
+
+    <div class="profile-info">
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Location:</strong> {{ user.location }}</p>
+    </div>
+  </div>
+
+  <!-- Right Section -->
+<div class="profile-right-section">
+  <section>
+    <h2>Books You Have</h2>
+    <!-- Horizontal scroll container -->
+    <div class="book-scroll-container">
+      {% for item in have_list %}
+        <!-- Each book is an individual card -->
+        <div class="book-card-profile">
+          <img
+            src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
+            alt="Cover of {{ item.book.title }}"
+            onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            class="book-thumbnail"
+          >
+          <a href="/books/entry/{{ item.book.ISBN }}/"><p class="book-title">{{ item.book.title }}</p></a>
+          <p class="book-author">{{ item.book.author }}</p>
+          <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
+            <input type="hidden" name="list_type" value="have">
+            <button type="submit" class="delete-book-icon" title="Delete book" style="background: none; border: none; cursor: pointer;">
+              <div class="delete-circle">×</div>
+            </button>
+          </form>
+        </div>
+      {% empty %}
+        <div class="empty-message">You haven't added any books you own.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2>Books You Want</h2>
+    <!-- Same format applies for wanted books -->
+    <div class="book-scroll-container">
+      {% for item in want_list %}
+        <div class="book-card-profile">
+          <img
+            src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
+            alt="Cover of {{ item.book.title }}"
+            onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            class="book-thumbnail"
+          >
+          <a href="/books/entry/{{ item.book.ISBN }}/"><p class="book-title">{{ item.book.title }}</p></a>
+          <p class="book-author">{{ item.book.author }}</p>
+          <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
+            <input type="hidden" name="list_type" value="want">
+            <button type="submit" class="delete-book-icon" title="Delete book" style="background: none; border: none; cursor: pointer;">
+              <div class="delete-circle">×</div>
+            </button>
+          </form>
+        </div>
+      {% empty %}
+        <div class="empty-message">You haven't added any books you want.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2>Exchanges</h2>
+    <ul>
+      {% for exchange in exchanges_list %}
+        <li>Exchange with {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Offered book: {{ exchange.book.title }}</li>
+      {% empty %}
+        <li>You haven't made any exchanges.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sales and Donations</h2>
+    <ul>
+      {% for sale in sales_list %}
+        <li>{{ sale.book.title }} – {{ sale.get_type_display }} – {{ sale.price }} €</li>
+      {% empty %}
+        <li>You haven't sold or donated any books.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Reviews</h2>
+    <ul>
+      {% for review in reviews_list %}
+        <li>
+          <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>: "{{ review.comment }}"<br>
+          Rating: {{ review.rating }}/5
+        </li>
+      {% empty %}
+        <li>You haven't made any review yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
 </div>
+
+<!-- Confirmation message when a book is deleted -->
+<div id="delete-confirmation" class="delete-confirmation">
+  <span class="message">Book successfully deleted</span>
+</div>
+</div>
+</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.querySelector('.profile-picture-wrapper');
+            const fileInput = document.getElementById('id_profile_picture');
+            const form = document.getElementById('profile-picture-form');
+
+            wrapper.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    form.submit();
+                }
+            });
+        });
+
+        function fetchGoogleBooksCover(imgElement, isbn) {
+            const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.items && data.items.length > 0) {
+                    const thumbnail = data.items[0].volumeInfo.imageLinks?.thumbnail;
+                    if (thumbnail) {
+                        imgElement.src = thumbnail;
+                    }
+                }
+            })
+            .catch(error => {
+            console.error("Error fetching Google Books cover:", error);
+            });
+        }
+
+        // Show message when a book is deleted
+        document.querySelectorAll('.delete-book-icon').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
+
+            // Show message
+            const confirmation = document.getElementById('delete-confirmation');
+            confirmation.classList.add('show');
+
+            // Submit form after animation
+            setTimeout(() => {
+              form.submit();
+            }, 300);
+
+            // Hide message after 3 seconds
+            setTimeout(() => {
+              confirmation.classList.remove('show');
+            }, 3000);
+          });
+        });
+    </script>
+
 {% endblock %}
