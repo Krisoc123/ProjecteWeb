@@ -419,7 +419,43 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 *Formulari d'edició simplificat amb validació integrada.*
 
-## Eliminació d'instàncies: El cas de les Reviews
+---
+
+### 4. Configuració d'URLs (`urls.py`)
+```python
+path('review/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update')
+```
+- **Paràmetres**:  
+  - `pk`: Identificador únic de la ressenya a editar.  
+
+---
+
+### 5. Tests E2E (`update_reviews.feature`)
+```gherkin
+Scenario: Update my own review
+  Given I login as user "user1"
+  When I edit my review text from "This is a great book!" to "This book is amazing!"
+  Then The review is updated globally
+
+Scenario: Cannot edit another user's review
+  Given I login as user "user2"
+  Then No "Edit" link is visible for "user1"'s review
+```
+- **Cobertura**:  
+  - Actualització vàlida.  
+  - Restriccions d'accés.  
+  - Integritat de dades (eliminació de l'original).  
+
+---
+
+## Integració amb la UI Existents
+- **Enllaç d'Edició**: Visible només per al creador de la ressenya.  
+- **Redirecció Inteligent**: Després de l'actualització, l'usuari retorna a la pàgina del llibre.  
+- **Validació en Temps Real**: Errors de formulari es mostren dinàmicament (p.e., camps buits).  
+
+Aquesta implementació assegura que les ressenyes reflecteixin sempre les opinions actualitzades dels usuaris, mantenint alhora l'integritat i seguretat de les dades.
+
+# 4. Eliminació d'instàncies: El cas de les Reviews
 
 De manera similar a la creació d'instàncies, també hem implementat la forma d'eliminar elements de la base de dades, com és el cas de les reviews. El procés d'eliminació segueix un patró similar però amb algunes particularitats enfocades a garantir que només l'usuari apropiat pot eliminar el contingut i un formulari de confirmació abans de procedir a l'eliminació.
 
@@ -462,41 +498,6 @@ class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 El mètode `test_func()` constitueix el punt central del nostre sistema de seguretat. Aquesta funció és invocada automàticament per Django abans de permetre l'accés a la vista i proporciona una segona capa de protecció (més enllà de la interfície d'usuari) que verifica que l'usuari actual és efectivament el propietari de la ressenya. Si aquesta comprovació falla —per exemple, si algú intentés manipular les URL directament per eliminar una ressenya aliena— Django bloquejarà completament l'accés, retornant un error 403 Forbidden i impedint qualsevol intent d'eliminació no autoritzada.
 
----
-
-### 4. Configuració d'URLs (`urls.py`)
-```python
-path('review/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update')
-```
-- **Paràmetres**:  
-  - `pk`: Identificador únic de la ressenya a editar.  
-
----
-
-### 5. Tests E2E (`update_reviews.feature`)
-```gherkin
-Scenario: Update my own review
-  Given I login as user "user1"
-  When I edit my review text from "This is a great book!" to "This book is amazing!"
-  Then The review is updated globally
-
-Scenario: Cannot edit another user's review
-  Given I login as user "user2"
-  Then No "Edit" link is visible for "user1"'s review
-```
-- **Cobertura**:  
-  - Actualització vàlida.  
-  - Restriccions d'accés.  
-  - Integritat de dades (eliminació de l'original).  
-
----
-
-## Integració amb la UI Existents
-- **Enllaç d'Edició**: Visible només per al creador de la ressenya.  
-- **Redirecció Inteligent**: Després de l'actualització, l'usuari retorna a la pàgina del llibre.  
-- **Validació en Temps Real**: Errors de formulari es mostren dinàmicament (p.e., camps buits).  
-
-Aquesta implementació assegura que les ressenyes reflecteixin sempre les opinions actualitzades dels usuaris, mantenint alhora l'integritat i seguretat de les dades. 📚✏️
 Quan l'usuari accedeix a aquesta vista, se li mostra una pantalla de confirmació (`review_confirm_delete.html`) que detalla quina ressenya està a punt d'eliminar i demana confirmació per procedir:
 
 ```html
