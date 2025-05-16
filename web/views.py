@@ -31,8 +31,6 @@ def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            # Toda la lógica de guardado está encapsulada en el método save() del formulario
-            # y está protegida por transaction.atomic para evitar registros parciales
             user = form.save()
             # Inicia sesión automáticamente tras el registro
             login(request, user)

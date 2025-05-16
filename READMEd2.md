@@ -180,7 +180,7 @@ Aquestes funcionalitats d'autocompletat s'integren en el nostre formulari de cer
 
 ![](https://i.imgur.com/ZzxEbjl.png)
 
-# Creació d'instàncies
+# 2. Creació d'instàncies
 S'han implementat diverses funcionalitats on es creen instàncies a la base de dades, a continuació s'explica detalladament la creació d'instàncies en les relacions `Have` i `Want` (WishList) del model relacional.
 Aquestes funcionalitats es poden trobar a `books.html` i `book-entry.html`, on es troben els botons pertinents. S'han utilitzat Class-Based Views i ModelForms per a la creació, actualització i eliminació d'instàncies a la base de dades.
 
@@ -403,3 +403,11 @@ Si l'usuari confirma l'eliminació mitjançant el botó "Delete Review", s'envia
 def get_success_url(self):
     return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
 ```
+# 5. Model relacional
+Respecte al model relacional, dissenyat en la primera entrega, hem mantingut totes les relacions. Només s'ha afegit a la classe `Have` un nou camp `status` que permet identificar l'estat del llibre (nou, usat o danyat) i a la classe `User` un nou camp `profile_picture` que permet identificar la imatge de perfil de l'usuari i un camp `description` que permet identificar la descripció de l'usuari.
+
+# 6. Implementacions futures restants
+Tot i que, la implementació actual, compleix, en principi, amb els requisits de l'enunciat, hi ha algunes funcionalitats que caldria dissenyar i implementar per tal de donar sentit al projecte. 
+- Caldria establir algun sistema per fixar els preus dels llibres (punts), en funció de l'estat del llibre, el preu base segons alguna API externa o la data de publicació.
+- També caldria millorar la gestió dels intercanvis, utilitzant la ubicació dels usuaris per tal de facilitar l'intercanvi físic dels llibres.
+- Afegir algun pas més en l'establiment del intercanvi, com per exemple un xat, o alguna comunicació entre els usuaris per tal de pactar la data i hora de la trobada.
