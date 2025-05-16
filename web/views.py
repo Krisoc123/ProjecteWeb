@@ -353,7 +353,7 @@ def book_trade_view(request):
 def sale_detail(request, ISBN):
     mybook = get_object_or_404(Book, ISBN=ISBN)
     sale_donations = SaleDonation.objects.filter(book=mybook)
-    user_tokens = request.user.points
+    user_tokens = User.objects.first().points
 
     context = {
         'mybook': mybook,
@@ -365,7 +365,7 @@ def sale_detail(request, ISBN):
 
 def get_book(request, offer_id):
     offer = get_object_or_404(SaleDonation, id=offer_id)
-    buyer = request.user.custom_user
+    buyer = request.user
 
     if offer.status != 'pending':
         messages.error(request, "Esta oferta ya ha sido gestionada.")

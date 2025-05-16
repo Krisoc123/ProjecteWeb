@@ -6,8 +6,14 @@
 
 {% block content %}
 <div class="buy-form-container">
+<div class="book-cover-entry">
+    <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
+         alt="Cover of {{ mybook.title }}"
+         onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
+         onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
+</div>
 <div class="book-info">
-    <h1>Get {{ mybook }}</h1>
+    <h1>Get {{ mybook.title }}</h1>
     <p>Author: {{ mybook.author }}</p>
     <p>Topic: {{ mybook.topic }}</p>
     <p>ISBN: {{ mybook.ISBN }}</p>
