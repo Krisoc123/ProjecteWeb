@@ -31,7 +31,7 @@
             <a href="{% url 'add_to_havelist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Havelist </a>
             <a href="{% url 'add_to_wishlist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Wishlist </a>
             <a href="{% url 'book-trade' %}" class="button"> Look for a trade </a>
-            <a href="{% url 'book-buy' %}" class="button"> Buy this book </a>
+            <a href="{% url 'sale_detail' mybook.ISBN %}" class="button"> Buy this book </a>
         </div>
 
         <!-- Sección de Reviews -->

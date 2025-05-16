@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction
@@ -350,8 +350,45 @@ def book_entry(request, ISBN):
 def book_trade_view(request):
     return render(request, 'trade_form.html')
 
-def book_buy_view(request):
-    return  render(request, 'buy_form.html')
+def sale_detail(request, ISBN):
+    mybook = get_object_or_404(Book, ISBN=ISBN)
+    sale_donations = SaleDonation.objects.filter(book=mybook)
+    user_tokens = request.user.points
+
+    context = {
+        'mybook': mybook,
+        'sale_donations': sale_donations,
+        'user_tokens': user_tokens,
+    }
+    return render(request, 'buy_form.html', context)
+
+
+def get_book(request, offer_id):
+    offer = get_object_or_404(SaleDonation, id=offer_id)
+    buyer = request.user.custom_user
+
+    if offer.status != 'pending':
+        messages.error(request, "Esta oferta ya ha sido gestionada.")
+        return redirect('home')
+
+    if buyer.points >= offer.points:
+        buyer.points -= offer.points
+        buyer.save()
+
+        # Transfer points to the offering user
+        if offer.user != buyer:
+            offer.user.points += offer.points
+            offer.user.save()
+
+        offer.status = 'completed'
+        offer.save()
+
+        messages.success(request, "Has adquirido el libro correctamente.")
+    else:
+        messages.error(request, "No tienes suficientes puntos para adquirir este libro.")
+
+    return redirect('home')
+
 
 def wishlist_view(request):
     return render(request, 'wishlist.html')

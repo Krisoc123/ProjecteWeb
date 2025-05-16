@@ -1,2 +1,106 @@
 {% extends 'base.html' %}
 {% load static %}
+
+
+{% block title %}Get Book{% endblock %}
+
+{% block content %}
+<div class="buy-form-container">
+<div class="book-info">
+    <h1>Get {{ mybook }}</h1>
+    <p>Author: {{ mybook.author }}</p>
+    <p>Topic: {{ mybook.topic }}</p>
+    <p>ISBN: {{ mybook.ISBN }}</p>
+</div>
+
+    <h2>Available Donations/Sales</h2>
+
+    <section class="sale-donation-options">
+        {% if sale_donations %}
+            <table class="user-list">
+                <thead>
+                    <tr>
+                        <th>Owner</th>
+                        <th>Points</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offer in sale_donations %}
+                        <tr>
+                            <td>{{ offer.user.username }}</td>
+                            <td>{{ offer.points }}</td>
+                            <td>{{ offer.location }}</td>
+                            <td>{{ offer.status }}</td>
+                            <td>
+                                {% if offer.status == 'pending' %}
+                                    <form method="POST" action="{% url 'get_book' offer.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="buy-button">Request</button>
+                                    </form>
+                                {% else %}
+                                    <em>Not available</em>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No current offers for this book.</p>
+        {% endif %}
+    </section>
+
+    <section class="user-balance">
+        <h3>Your Token Balance</h3>
+        <p>You currently have: <strong>{{ user_tokens }}</strong> Tokens</p>
+    </section>
+</div>
+</div>
+
+<style>
+    .buy-form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .buy-form-container h1, .buy-form-container h2, .buy-form-container h3 {
+        margin-bottom: 20px;
+    }
+
+    .user-list {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .user-list th, .user-list td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .user-list th {
+        background-color: #f4f4f4;
+    }
+
+    .buy-button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .buy-button:hover {
+        background-color: #45a049;
+    }
+</style>
+{% endblock %}
