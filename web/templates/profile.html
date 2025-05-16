@@ -1,20 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
 {% extends "base.html" %}
 {% load static %}
-
+<body>
 {% block content %}
-<h1>Perfil de {{ user.name}}</h1>
+<h1>{{ user.name}}'s Profile</h1>
 
-<!-- Info básica -->
+<!-- Basic Info -->
 <div class="profile-content" style="display: flex; gap: 2rem; align-items: flex-start;">
 
-  <!-- Sección izquierda -->
+  <!-- Left Section -->
   <div class="profile-left-section" style="flex: 1; min-width: 250px;">
     <div class="profile-image-container">
       <form method="post" enctype="multipart/form-data" id="profile-picture-form">
         {% csrf_token %}
-        <div class="profile-picture-wrapper" title="Haz clic para cambiar la foto">
+        <div class="profile-picture-wrapper" title="Click to change photo">
           {% if user.profile_picture %}
-            <img src="{{ user.profile_picture.url }}" alt="Foto de perfil" class="profile-picture">
+            <img src="{{ user.profile_picture.url }}" alt="Profile picture" class="profile-picture">
           {% else %}
             <div class="profile-picture-placeholder">
               <span>{{ user.name|first }}</span>
@@ -31,170 +33,172 @@
     <h2 class="profile-name">{{ user.name }}</h2>
 
     <div class="profile-info">
-      <p><strong>Nombre de usuario:</strong> {{ user.username }}</p>
-      <p><strong>Correo:</strong> {{ user.email }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Location:</strong> {{ user.location }}</p>
     </div>
   </div>
 
-  <!-- Sección derecha -->
+  <!-- Right Section -->
 <div class="profile-right-section">
   <section>
-    <h2>Libros que tienes</h2>
-    <!-- Contenedor principal de scroll horizontal -->
+    <h2>Books You Have</h2>
+    <!-- Horizontal scroll container -->
     <div class="book-scroll-container">
       {% for item in have_list %}
-        <!-- Cada libro es una tarjeta individual -->
-        <div class="book-card">
+        <!-- Each book is an individual card -->
+        <div class="book-card-profile">
           <img
             src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
-            alt="Portada de {{ item.book.title }}"
+            alt="Cover of {{ item.book.title }}"
             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
             onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
             class="book-thumbnail"
           >
-          <p class="book-title">{{ item.book.title }}</p>
+          <a href="/books/entry/{{ item.book.ISBN }}/"><p class="book-title">{{ item.book.title }}</p></a>
           <p class="book-author">{{ item.book.author }}</p>
           <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
             {% csrf_token %}
             <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
             <input type="hidden" name="list_type" value="have">
-            <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
+            <button type="submit" class="delete-book-icon" title="Delete book" style="background: none; border: none; cursor: pointer;">
               <div class="delete-circle">×</div>
             </button>
           </form>
         </div>
       {% empty %}
-        <div class="empty-message">No has añadido libros que tienes.</div>
+        <div class="empty-message">You haven't added any books you own.</div>
       {% endfor %}
     </div>
   </section>
 
   <section>
-    <h2>Libros que deseas</h2>
-    <!-- También aplicamos el mismo formato para los libros deseados -->
+    <h2>Books You Want</h2>
+    <!-- Same format applies for wanted books -->
     <div class="book-scroll-container">
       {% for item in want_list %}
-        <div class="book-card">
+        <div class="book-card-profile">
           <img
             src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
-            alt="Portada de {{ item.book.title }}"
+            alt="Cover of {{ item.book.title }}"
             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
             onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
             class="book-thumbnail"
           >
-          <p class="book-title">{{ item.book.title }}</p>
+          <a href="/books/entry/{{ item.book.ISBN }}/"><p class="book-title">{{ item.book.title }}</p></a>
           <p class="book-author">{{ item.book.author }}</p>
           <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
             {% csrf_token %}
             <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
             <input type="hidden" name="list_type" value="want">
-            <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
+            <button type="submit" class="delete-book-icon" title="Delete book" style="background: none; border: none; cursor: pointer;">
               <div class="delete-circle">×</div>
             </button>
           </form>
         </div>
       {% empty %}
-        <div class="empty-message">No has añadido libros que deseas.</div>
+        <div class="empty-message">You haven't added any books you want.</div>
       {% endfor %}
     </div>
   </section>
 
   <section>
-    <h2>Intercambios</h2>
+    <h2>Exchanges</h2>
     <ul>
       {% for exchange in exchanges_list %}
-        <li>Intercambio con {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Libro ofrecido: {{ exchange.book.title }}</li>
+        <li>Exchange with {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Offered book: {{ exchange.book.title }}</li>
       {% empty %}
-        <li>No has realizado intercambios.</li>
+        <li>You haven't made any exchanges.</li>
       {% endfor %}
     </ul>
   </section>
 
   <section>
-    <h2>Ventas y donaciones</h2>
+    <h2>Sales and Donations</h2>
     <ul>
       {% for sale in sales_list %}
         <li>{{ sale.book.title }} – {{ sale.get_type_display }} – {{ sale.price }} €</li>
       {% empty %}
-        <li>No has vendido ni donado libros.</li>
+        <li>You haven't sold or donated any books.</li>
       {% endfor %}
     </ul>
   </section>
 
   <section>
-    <h2>Reseñas recibidas</h2>
+    <h2>Reviews</h2>
     <ul>
       {% for review in reviews_list %}
         <li>
           <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>: "{{ review.comment }}"<br>
-          Calificación: {{ review.rating }}/5
+          Rating: {{ review.rating }}/5
         </li>
       {% empty %}
-        <li>No has recibido reseñas aún.</li>
+        <li>You haven't made any review yet.</li>
       {% endfor %}
     </ul>
   </section>
 </div>
 
-<!-- Añadimos un mensaje de confirmación que se mostrará cuando se elimine un libro -->
+<!-- Confirmation message when a book is deleted -->
 <div id="delete-confirmation" class="delete-confirmation">
-  <span class="message">Libro eliminado correctamente</span>
+  <span class="message">Book successfully deleted</span>
 </div>
+</div>
+</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.querySelector('.profile-picture-wrapper');
+            const fileInput = document.getElementById('id_profile_picture');
+            const form = document.getElementById('profile-picture-form');
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const wrapper = document.querySelector('.profile-picture-wrapper');
-        const fileInput = document.getElementById('id_profile_picture');
-        const form = document.getElementById('profile-picture-form');
+            wrapper.addEventListener('click', function() {
+                fileInput.click();
+            });
 
-        wrapper.addEventListener('click', function() {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', function() {
-            if (fileInput.files.length > 0) {
-                form.submit();
-            }
-        });
-    });
-
-    function fetchGoogleBooksCover(imgElement, isbn) {
-        const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
-        fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.items && data.items.length > 0) {
-                const thumbnail = data.items[0].volumeInfo.imageLinks?.thumbnail;
-                if (thumbnail) {
-                    imgElement.src = thumbnail;
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    form.submit();
                 }
-            }
-        })
-        .catch(error => {
-        console.error("Error fetching Google Books cover:", error);
+            });
         });
-    }
-    // Mostrar mensaje cuando se elimina un libro
-    document.querySelectorAll('.delete-book-icon').forEach(button => {
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
-        const form = this.closest('form');
 
-        // Mostrar mensaje
-        const confirmation = document.getElementById('delete-confirmation');
-        confirmation.classList.add('show');
+        function fetchGoogleBooksCover(imgElement, isbn) {
+            const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.items && data.items.length > 0) {
+                    const thumbnail = data.items[0].volumeInfo.imageLinks?.thumbnail;
+                    if (thumbnail) {
+                        imgElement.src = thumbnail;
+                    }
+                }
+            })
+            .catch(error => {
+            console.error("Error fetching Google Books cover:", error);
+            });
+        }
 
-        // Enviar formulario después de animación
-        setTimeout(() => {
-          form.submit();
-        }, 300);
+        // Show message when a book is deleted
+        document.querySelectorAll('.delete-book-icon').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
 
-        // Ocultar mensaje después de 3 segundos
-        setTimeout(() => {
-          confirmation.classList.remove('show');
-        }, 3000);
-      });
-    });
-</script>
+            // Show message
+            const confirmation = document.getElementById('delete-confirmation');
+            confirmation.classList.add('show');
+
+            // Submit form after animation
+            setTimeout(() => {
+              form.submit();
+            }, 300);
+
+            // Hide message after 3 seconds
+            setTimeout(() => {
+              confirmation.classList.remove('show');
+            }, 3000);
+          });
+        });
+    </script>
 
 {% endblock %}

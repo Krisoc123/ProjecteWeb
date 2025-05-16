@@ -1025,7 +1025,7 @@ footer {
 
 /* Estilo para cada tarjeta de libro */
 /* Contenedor principal del libro */
-.book-card {
+.book-card-profile{
   position: relative;
   width: 150px;
   min-height: 320px; /* Altura mínima ajustada */
@@ -1140,7 +1140,7 @@ footer {
     height: 120px;
   }
 
-  .book-card {
+  .book-card-profile {
     width: 130px !important;
     position: relative; /* Añadido */
     padding-bottom: 1.5rem; /* Espacio para el botón */
@@ -1176,19 +1176,19 @@ footer {
 
 
 /* Asegurar que el formulario no añada espacio extra */
-.book-card form {
+.book-card-profile form {
   margin: 0;
   padding: 0;
 }
 
 /* Mejorar el hover de la tarjeta */
-.book-card:hover .book-thumbnail {
+.book-card-profile:hover .book-thumbnail {
   transform: translateY(-3px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Ajustar el espacio para el título/autor */
-.book-card > p {
+.book-card-profile > p {
   margin: 0.2rem 0;
   padding: 0 0.2rem;
 }
