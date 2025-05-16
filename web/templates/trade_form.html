@@ -1,2 +1,36 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block content %}
+<div class="exchange-container">
+    <h1>Book Exchange</h1>
+
+    <p>Select a user to exchange the book with:</p>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post" class="exchange-form">
+        {% csrf_token %}
+        <ul class="user-list">
+            {% for user in users %}
+            <li>
+                <label>
+                    <input type="radio" name="selected_user" value="{{ user.id }}">
+                    {{ user.name }} ({{ user.location }})
+                </label>
+            </li>
+            {% empty %}
+            <li>No users available to exchange this book.</li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="submit-button">Confirm Exchange</button>
+    </form>
+</div>
+{% endblock %}
+

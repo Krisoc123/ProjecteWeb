@@ -15,6 +15,10 @@
         <h3>{{ book.title }}</h3>
     {% endif %}
     <p class="author">by {{ book.author }}</p>
+    
+    {% if book.topic %}
+        <p class="topic"><span class="topic-label">Category:</span> {{ book.topic }}</p>
+    {% endif %}
 
     {% if book.description %}
         <p class="description">{{ book.description|truncatechars:70 }}</p>

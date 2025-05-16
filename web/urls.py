@@ -21,4 +21,6 @@ urlpatterns = [
     path('havelist/', views.havelist_view ,name='havelist'),
     path('trade/', views.book_trade_view ,name='book-trade'),
     path('buy/', views.book_buy_view ,name='book-buy'),
+    path('trade/<int:book_id>/', views.trade_form, name='trade_form'),
+    path('trade/success/', views.trade_success, name='trade_success'),
 ]
