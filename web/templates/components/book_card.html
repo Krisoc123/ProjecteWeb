@@ -32,7 +32,7 @@
     }
     </script>
 
-    <a href="/books/entry/{{ book.ISBN }}/"><h2>{{ book.title }}</h2></a>
+    <a href="/books/entry/{{ book.ISBN }}/"><h3>{{ book.title }}</h3></a>
     <p class="author">by {{ book.author }}</p>
     {% if book.co_authors.exists %}
         <p class="co-authors">

@@ -1,14 +1,20 @@
-# Autocompletat amb AJAX i l'API de Google Books
+# 0. Enllaç al Repositori
 
-## Introducció
+`https://github.com/Krisoc123/ProjecteWeb.git`
+
+El codi coresponen a aquesta entrega serà el que es troba a la branca `main` del repositori.
+
+# 1. Autocompletat amb AJAX i l'API de Google Books
+
+
 
 En el nostre projecte d'intercanvi de llibres, hem implementat una funcionalitat d'autocompletat que utilitza AJAX (Asynchronous JavaScript and XML) per fer consultes en temps real a l'API de Google Books, proporcionant suggeriments mentre l'usuari escriu en els camps del formulari.
 
-## Com funciona l'autocompletat en el nostre projecte
+## Com funciona l'autocompletat en el nostre projecte?
 
 Quan un usuari comença a escriure el títol d'un llibre o el nom d'un autor en el nostre formulari de cerca, el sistema realitza una petició en segon pla a l'API de Google Books. L'API processa aquesta petició i retorna una llista de possibles coincidències, que es mostren immediatament sota el camp de text sense necessitat de recarregar la pàgina.
 
-## Implementació tècnica
+## Implementació
 
 La nostra implementació utilitza jQuery UI Autocomplete i fa crides AJAX a l'API de Google Books. Hem creat dues funcionalitats d'autocompletat separades:
 
@@ -81,6 +87,11 @@ $(function() {
   * `data`: Conté els paràmetres de la petició:
     * `q: "intitle:" + request.term`: Opera amb "intitle:" per buscar el text només als títols dels llibres.
     * `maxResults: 10`: Limita el nombre de resultats.
+
+    D'aquesta manera, la consulta a l'endpoint de Google Books es realitza amb el següent format:
+    ```
+    https://www.googleapis.com/books/v1/volumes?q=intitle:{{text}}&maxResults=10
+    ```
   * `success: function(data) { ... }`: S'executa quan la petició té èxit.
   * Comprova si hi ha resultats amb `if (!data.items)`.
   * Transforma les dades rebudes al format que necessita l'autocomplete mitjançant `$.map()`.
@@ -169,166 +180,158 @@ Aquestes funcionalitats d'autocompletat s'integren en el nostre formulari de cer
 
 ![](https://i.imgur.com/ZzxEbjl.png)
 
-# Implementació de WishList i HaveList amb Class-Based Views i ModelForms
+# Creació d'instàncies
+S'han implementat diverses funcionalitats on es creen instàncies a la base de dades, a continuació s'explica detalladament la creació d'instàncies en les relacions `Have` i `Want` (WishList) del model relacional.
+Aquestes funcionalitats es poden trobar a `books.html` i `book-entry.html`, on es troben els botons pertinents. S'han utilitzat Class-Based Views i ModelForms per a la creació, actualització i eliminació d'instàncies a la base de dades.
 
-## Introducció
 
-En el nostre projecte d'intercanvi de llibres, hem implementat dues funcionalitats essencials que permeten als usuaris gestionar els seus interessos: la llista de desitjos (WishList) i la llista de llibres que tenen (HaveList) utilitzant Class-Based Views i ModelForms per a la creació, actualització i eliminació d'instàncies a la base de dades.
 
-# Creació d'instàncies a la base de dades
+## Implementació de WishList i HaveList amb Class-Based Views
 
-## Els ModelForms
+La implementació de les funcionalitats WishList i HaveList al nostre sistema segueix un flux complet des de la interfície d'usuari fins a la persistència a la base de dades. Hem utilitzat les vistes basades en classes de Django tal com es recomanava a l'enunciat, aconseguint un codi més organitzat i reutilitzable.
 
-Per gestionar la creació i actualització d'aquestes entitats, utilitzem ModelForms:
+El flux complet de l'aplicació comença a les targetes de llibres, on l'usuari inicia el procés fent clic en un botó. En aquest punt, el nostre sistema segueix una seqüència de passos que explicarem detalladament.
 
-```python
-# Exemple de ModelForms
-from django import forms
-from .models import WishList, HaveList
+### Del botó a la vista: Inici del procés
 
-class WishListForm(forms.ModelForm):
-    class Meta:
-        model = WishList
-        fields = ['book']  # Normalment només necessitem el llibre, ja que l'usuari s'obté del request
-        
-class HaveListForm(forms.ModelForm):
-    class Meta:
-        model = HaveList
-        fields = ['book', 'condition']  # Incloem la condició del llibre
-```
-
-## Les Class-Based Views
-
-Per implementar la creació d'instàncies a la base de dades, utilitzem Class-Based Views que simplifiquen el procés:
-
-```python
-# Exemple de Class-Based Views
-from django.views.generic import CreateView, DeleteView, ListView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404, redirect
-from .models import Book, WishList, HaveList
-from .forms import WishListForm, HaveListForm
-
-class AddToWishListView(LoginRequiredMixin, CreateView):
-    model = WishList
-    form_class = WishListForm
-    success_url = reverse_lazy('wishlist')
-    
-    def form_valid(self, form):
-        # Assignem l'usuari actual abans de desar
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-    
-    def get(self, request, *args, **kwargs):
-        # Gestió dels paràmetres GET (com en els enllaços del nostre exemple)
-        isbn = request.GET.get('isbn')
-        title = request.GET.get('title')
-        author_name = request.GET.get('author')
-        
-        # Busquem o creem el llibre si no existeix
-        book, created = Book.objects.get_or_create(
-            ISBN=isbn,
-            defaults={'title': title}
-        )
-        
-        # Busquem o creem l'autor si no existeix
-        if created and author_name:
-            author, _ = Author.objects.get_or_create(name=author_name)
-            book.author = author
-            book.save()
-        
-        # Creem l'entrada a la WishList
-        WishList.objects.get_or_create(user=request.user, book=book)
-        
-        return redirect('wishlist')
-
-class AddToHaveListView(LoginRequiredMixin, CreateView):
-    model = HaveList
-    form_class = HaveListForm
-    success_url = reverse_lazy('havelist')
-    
-    def form_valid(self, form):
-        # Assignem l'usuari actual abans de desar
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-    
-    def get(self, request, *args, **kwargs):
-        # Gestió dels paràmetres GET (com en els enllaços del nostre exemple)
-        isbn = request.GET.get('isbn')
-        title = request.GET.get('title')
-        author_name = request.GET.get('author')
-        
-        # Busquem o creem el llibre si no existeix
-        book, created = Book.objects.get_or_create(
-            ISBN=isbn,
-            defaults={'title': title}
-        )
-        
-        # Busquem o creem l'autor si no existeix
-        if created and author_name:
-            author, _ = Author.objects.get_or_create(name=author_name)
-            book.author = author
-            book.save()
-        
-        # Redirigim al formulari per afegir detalls adicionals com la condició del llibre
-        return redirect('add_have_details', isbn=isbn)
-```
-
-## La configuració d'URLs
-
-Finalment, cal configurar les URLs per enllaçar amb les vistes:
-
-```python
-# Exemple de configuració d'URLs
-from django.urls import path
-from .views import AddToWishListView, AddToHaveListView
-
-urlpatterns = [
-    path('add-to-wishlist/', AddToWishListView.as_view(), name='add_to_wishlist'),
-    path('add-to-havelist/', AddToHaveListView.as_view(), name='add_to_havelist'),
-    # Altres URLs...
-]
-```
-
-## Explicació dels enllaços d'exemple
-
-En el nostre codi HTML, podem veure dos enllaços que utilitzen aquesta implementació:
+Tot comença a les targetes de llibres (`book_card.html` i `external_book_card.html`), on implementem botons que permeten als usuaris afegir un llibre a les seves llistes personals. Aquests botons són enllaços HTML que inclouen els paràmetres necessaris:
 
 ```html
+<!-- book_card.html -->
 <a href="{% url 'add_to_wishlist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author.name|urlencode }}" class="love-button" title="Want!">
-    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart">
-        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-    </svg>
-</a>
-
-<a href="{% url 'add_to_havelist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author.name|urlencode }}" class="have-button" title="I have it!">
-    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-library-big-icon">
-        <rect width="8" height="18" x="3" y="3" rx="1"/>
-        <path d="M7 3v18"/>
-        <path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/>
-    </svg>
+    <svg>...</svg>
 </a>
 ```
 
-Aquests enllaços funcionen de la següent manera:
 
-1. **Generació de l'URL**: Utilitzem `{% url 'add_to_wishlist' %}` i `{% url 'add_to_havelist' %}` per generar les URLs correctes basades en les configuracions d'URLs.
+![](https://i.imgur.com/IepxlLq.png)
 
-2. **Paràmetres GET**: Afegim paràmetres a l'URL (`?isbn=...&title=...&author=...`) que contenen la informació necessària sobre el llibre.
-   - Utilitzem `urlencode` per codificar correctament els valors i evitar problemes amb caràcters especials.
 
-3. **Processament a la vista**: Quan l'usuari fa clic a un d'aquests enllaços, la petició GET s'envia a la Class-Based View corresponent:
-   - La vista extreu els paràmetres de la petició GET.
-   - Busca o crea el llibre a la base de dades.
-   - Associa el llibre amb l'usuari en la llista corresponent.
-   - Redirigeix l'usuari a la pàgina adequada.
+Quan l'usuari clica aquest botó, l'aplicació redirigeix a la URL especificada, afegint com a paràmetres GET les dades del llibre. Al fitxer `urls.py` definim les rutes corresponents que connecten aquestes URLs amb les vistes adequades:
 
-4. **Estils i icones SVG**: Els enllaços tenen classes CSS per l'estilització i icones SVG per representar visualment les accions.
+```python
+# urls.py
+path('add-to-wishlist/', views.CreateWantView.as_view(), name='add_to_wishlist'),
+path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist'),
+```
 
-Aquest enfocament segueix les millors pràctiques de Django:
-- Utilitza Class-Based Views per reduir el codi repetitiu.
-- Implementa ModelForms per validació i creació d'instàncies.
-- Aprofita els paràmetres GET per passar informació entre pàgines de manera neta.
-- Segueix el principi DRY (Don't Repeat Yourself) reutilitzant components.
+### Processament a la vista (GET): Preparació del formulari
+
+Quan la petició arriba a la vista, s'executa el mètode GET. Hem implementat dues classes: `CreateWantView` i `CreateHaveView`, que hereten de `LoginRequiredMixin` (per assegurar que l'usuari està autenticat) i `CreateView` (per gestionar la creació de nous objectes). 
+
+```python
+# views.py
+class CreateWantView(LoginRequiredMixin, CreateView):
+    model = Want
+    form_class = WantForm
+    template_name = 'want_form.html'
+    success_url = reverse_lazy('books')
+```
+
+El mètode `get_initial()` s'encarrega de recollir els paràmetres de la URL i inicialitzar el formulari:
+
+```python
+def get_initial(self):
+    initial = super().get_initial()
+    initial['isbn'] = self.request.GET.get('isbn', '')
+    initial['title'] = self.request.GET.get('title', '')
+    initial['author'] = self.request.GET.get('author', '')
+    initial['topic'] = self.request.GET.get('topic', '')
+    return initial
+```
+
+### Renderització del formulari: Presentació a l'usuari
+
+La vista renderitza el formulari al template corresponent, mostrant la informació del llibre i els camps necessaris per completar l'acció. El template `want_form.html` mostra un formulari amb dades precàrregades:
+
+```html
+<!-- want_form.html -->
+<div class="book-info2">
+    <h3>{{ request.GET.title }}</h3>
+    <p>by {{ request.GET.author }}</p>
+    <p class="isbn">ISBN: {{ request.GET.isbn }}</p>
+</div>
+
+<div class="form-group">
+    <label for="{{ form.priority.id_for_label }}">Priority:</label>
+    {{ form.priority }}
+    <small class="form-text">{{ form.priority.help_text }}</small>
+</div>
+
+{{ form.isbn }}  <!-- Camp ocult -->
+{{ form.title }}  <!-- Camp ocult -->
+{{ form.author }}  <!-- Camp ocult -->
+```
+![](https://i.imgur.com/vOVyewi.png)
+
+Els camps específics (prioritat per WishList, estat per HaveList) es mostren visiblement, mentre que els camps amb la informació del llibre es mantenen ocults:
+
+```python
+# forms.py
+class WantForm(forms.ModelForm):
+    priority = forms.IntegerField(
+        min_value=1, max_value=5,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        help_text='Set the priority of this book (1=lowest, 5=highest)'
+    )
+    
+```
+
+### Processament a la vista (POST): Persistència de dades
+
+Quan l'usuari envia el formulari, s'executa el mètode POST que activa `form_valid()`. Aquest mètode realitza les següents accions:
+
+1. Verifica si el llibre existeix a la base de dades, creant-lo si és necessari:
+
+```python
+try:
+    book = Book.objects.get(ISBN=isbn)
+except Book.DoesNotExist:
+    book = Book(
+        ISBN=isbn,
+        title=title,
+        author=author,
+        topic=topic or "General",
+        publish_date=timezone.now().date(),
+        base_price=10
+    )
+    book.save()
+```
+
+2. Comprova si ja existeix una relació usuari-llibre, actualitzant-la o creant-ne una nova:
+
+```python
+# Per WishList:
+existing_want = Want.objects.filter(user=custom_user, book=book).first()
+
+if existing_want:
+    existing_want.priority = form.cleaned_data['priority']
+    existing_want.save()
+else:
+    want = form.save(commit=False)
+    want.user = custom_user
+    want.book = book
+    want.save()
+```
+
+3. Redirigeix l'usuari a la pàgina de llibres (`success_url = reverse_lazy('books')`).
+
+Aquest flux complet garanteix poder afegir llibres a les llistes personals amb només uns pocs clics, mentre que el sistema s'encarrega de la validació, la consistència de les dades i la gestió d'errors.
+
+La integració amb fonts externes com Google Books és transparent per a l'usuari, ja que el sistema crea automàticament els llibres que no existeixen prèviament a la nostra base de dades, realitzant validacions addicionals de l'ISBN i altres camps per mantenir la integritat de les dades.
+
+```python
+# models.py
+class Have(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('used', 'Used'),
+        ('damaged', 'Damaged')
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='used')
+```
+
+En resum, la implementació de WishList i HaveList segueix un flux complet: des del botó a la targeta del llibre, passant per les URLs i vistes, mostrant un formulari adaptat, i finalment processant i emmagatzemant les dades, tot mentre garanteix l'autenticació d'usuaris, la validació de dades i la prevenció de duplicats.
 
