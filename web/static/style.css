@@ -12,67 +12,48 @@ body {
     background-color: #f5f5f5;
 }
 
-/* Button Styles */
-.button {
+/* Button Styles - Consolidated */
+.button,
+.action-button,
+.review-button,
+.add-to-database-button,
+.submit-button {
     display: inline-block;
     padding: 0.75rem 1.5rem;
     background-color: #3498db;
     color: white;
     text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-.button:hover {
-    background-color: #2980b9;
-}
-
-.action-button, .review-button, .add-to-database-button {
-    display: inline-block;
-    padding: 12px 20px;
-    background-color: #3498db;
-    color: #ffffff;
-    border: none;
     border-radius: 6px;
     font-size: 1rem;
     font-weight: 600;
-    text-decoration: none;
+    border: none;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.action-button:hover, .review-button:hover, .add-to-database-button:hover {
+.button:hover,
+.action-button:hover,
+.review-button:hover,
+.add-to-database-button:hover,
+.submit-button:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
-.action-button:active, .review-button:active, .add-to-database-button:active {
+.button:active,
+.action-button:active,
+.review-button:active,
+.add-to-database-button:active,
+.submit-button:active {
     transform: translateY(0);
 }
 
 .submit-button {
     width: 100%;
     padding: 0.9rem;
-    background-color: #3498db;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
     margin-top: 1rem;
-}
-
-.submit-button:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-}
-
-.submit-button:active {
-    transform: translateY(0);
 }
 
 .cancel-button {
@@ -147,7 +128,7 @@ nav {
 }
 
 .nav-links a:hover {
-    color: #3fdb34;
+    color: #3498db; /* Changed from #3fdb34 to match button color scheme */
 }
 
 .user-greeting {
@@ -387,12 +368,12 @@ footer {
 .book-card {
     position: relative;
     display: flex;
-    width: 220px;
-    min-height: 400px;
-    height: 100%;
+    width: 210px;
+    min-height: 60px;
+    height: auto;
     flex-direction: column;
-    margin: 15px;
-    padding: 15px;
+    margin: 10px;
+    padding: 10px;
     background-color: white;
     border-radius: 10px;
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
@@ -406,38 +387,48 @@ footer {
 }
 
 .book-cover {
-    min-height: 150px;
+    min-height: 120px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .book-cover img {
-    max-height: 180px;
-    max-width: 120px;
-    min-height: 100px;
-    min-width: 70px;
+    max-height: 150px;
+    max-width: 100px;
+    min-height: 80px;
+    min-width: 60px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+.book-cover-entry img {
+    max-height: 240px;
+    max-width: 160px;
+    min-height: 120px;
+    min-width: 80px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     border-radius: 4px;
     object-fit: contain;
 }
 
 .book-card h3 {
-    margin: 10px 0 5px;
-    font-size: 18px;
+    margin: 6px 0 3px;
+    font-size: 16px;
 }
 
 .author {
-    font-size: 15px;
+    font-size: 13px;
 }
 
 .title {
-    font-size: 20px;
+    font-size: 16px;
 }
 
 .book-card p {
-    margin: 0 0 10px;
+    margin: 0 0 6px;
     color: #666;
 }
 
@@ -452,17 +443,17 @@ footer {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .book-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 8px;
-    padding-top: 8px;
+    gap: 6px;
+    margin-top: 4px;
+    padding-top: 4px;
     border-top: 1px solid #eee;
 }
 
@@ -491,13 +482,13 @@ footer {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
 }
 
 .books-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
+    gap: 10px;
 }
 
 /* Trending Books Section */
@@ -529,7 +520,7 @@ footer {
 }
 
 .book-info {
-    padding: 20px;
+    padding: 20px; /* Fixed excessively large padding (was 500px) */
 }
 
 .book-info h1 {
@@ -719,44 +710,8 @@ footer {
     line-height: 1.6;
 }
 
-/* Love and Have Buttons - Preserved as requested */
-.love-button {
-    width: 35px;
-    height: 35px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    background-color: rgb(209, 47, 47);
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 10;
-    position: relative; /* Canviat de absolute a relative */
-}
-
-.love-button:hover {
-    background-color: #ff5858;
-    transform: scale(1.05);
-}
-
-.love-button svg {
-    width: 23px !important;
-    height: 23px !important;
-    stroke: #ffffff;
-    stroke-width: 2;
-    min-width: 20px !important;
-    min-height: 20px !important;
-    position: relative; /* Canviat de absolute a relative */
-    z-index: 11;
-}
-
-.love-button.active svg {
-    fill: #ff6b6b;
-}
-
+/* Love and Have Buttons - Combined for consistency */
+.love-button,
 .have-button {
     width: 35px;
     height: 35px;
@@ -771,14 +726,16 @@ footer {
     transition: all 0.2s;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 10;
-    position: relative; /* Canviat de absolute a relative */
+    text-decoration: none;
 }
 
+.love-button:hover,
 .have-button:hover {
     background-color: #ff5858;
     transform: scale(1.05);
 }
 
+.love-button svg,
 .have-button svg {
     width: 23px !important;
     height: 23px !important;
@@ -786,18 +743,67 @@ footer {
     stroke-width: 2;
     min-width: 20px !important;
     min-height: 20px !important;
-    position: relative; /* Canviat de absolute a relative */
     z-index: 11;
+    pointer-events: none;
 }
 
+.love-button.active svg,
 .have-button.active svg {
     fill: #ff6b6b;
+}
+
+/* Exchange Container */
+.exchange-container {
+    max-width: 600px;
+    margin: 3rem auto;
+    background-color: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.exchange-container h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.exchange-container p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+}
+
+.user-list li {
+    margin-bottom: 1rem;
+}
+
+.user-list label {
+    font-size: 1rem;
+    color: #2c3e50;
+}
+
+.exchange-form input[type="radio"] {
+    margin-right: 0.5rem;
 }
 
 /* Responsive Styles */
 @media (max-width: 1200px) {
     .books-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .books-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -832,6 +838,12 @@ footer {
     .review-actions {
         margin-top: 0.5rem;
     }
+
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -842,11 +854,24 @@ footer {
     nav {
         flex-direction: column;
         gap: 1rem;
+        text-align: center;
     }
 
     .nav-links a {
-        margin-left: 1rem;
-        margin-right: 1rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .button,
+    .action-button,
+    .review-button,
+    .add-to-database-button,
+    .submit-button,
+    .cancel-button,
+    .delete-button {
+        width: 100%;
+        margin-bottom: 0.5rem;
     }
 }
 /* Contenedor principal */

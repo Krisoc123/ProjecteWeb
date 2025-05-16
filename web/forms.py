@@ -74,8 +74,7 @@ class HaveForm(forms.ModelForm):
     class Meta:
         model = Have
         fields = ['status', 'isbn', 'title', 'author', 'topic']
-        
-    # Assegurar-nos que el camp status té els widgets i atributs necessaris
+    
     status = forms.ChoiceField(
         choices=Have.STATUS_CHOICES,
         required=True,

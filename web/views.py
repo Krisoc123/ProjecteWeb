@@ -38,8 +38,6 @@ def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            # Toda la lógica de guardado está encapsulada en el método save() del formulario
-            # y está protegida por transaction.atomic para evitar registros parciales
             user = form.save()
             # Inicia sesión automáticamente tras el registro
             login(request, user)
@@ -170,17 +168,28 @@ def books(request):
         queryset = queryset.filter(title__icontains=title)
 
     if topic:
-        queryset = queryset.filter(topic=topic)
+        # Usamos icontains para hacer la búsqueda más flexible
+        queryset = queryset.filter(topic__icontains=topic)
 
     # Obtenim llibres d'APIs externes si hi ha paràmetres de cerca
     external_books = []
-    if author or title:
+    if author or title or topic:
         # Cerca a Google Books API
-        search_term = f"{title} {author}".strip()
-        print(f"Cercant amb el terme: '{search_term}'")  # Logging
-        if search_term:
+        search_terms = []
+        if title:
+            search_terms.append(f"intitle:{title}")  # Mejorado para búsquedas más precisas
+        if author:
+            search_terms.append(f"inauthor:{author}")
+        if topic:
+            # Aseguramos que el tema se busca correctamente en Google Books
+            search_terms.append(f"subject:{topic}")
+
+        search_query = " ".join(search_terms).strip()
+        print(f"Cercant amb el terme: '{search_query}'")  # Logging
+
+        if search_query:
             try:
-                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_term}&maxResults=20"
+                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_query}&maxResults=20"
                 print(f"Cridant API: {api_url}")  # Logging
                 google_response = requests.get(api_url)
                 print(f"Codi de resposta: {google_response.status_code}")  # Logging
@@ -190,14 +199,26 @@ def books(request):
                     print(f"Resultats obtinguts: {len(data.get('items', []))}")  # Logging
                     for item in data.get('items', []):
                         volume_info = item.get('volumeInfo', {})
+
+                        isbn = ''
+                        for identifier in volume_info.get('industryIdentifiers', []):
+                            if identifier.get('type') in ['ISBN_10', 'ISBN_13']:
+                                isbn = identifier.get('identifier', '')
+                                break
+
+                        # Extraemos categorías del libro si están disponibles
+                        categories = volume_info.get('categories', [])
+                        book_topic = categories[0] if categories else topic if topic else "General"
+
                         external_books.append({
                             'title': volume_info.get('title', 'Unknown Title'),
                             'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
                             'description': volume_info.get('description', ''),
                             'thumbnail_url': volume_info.get('imageLinks', {}).get('thumbnail', ''),
-                            'isbn': volume_info.get('industryIdentifiers', [{}])[0].get('identifier', ''),
+                            'ISBN': isbn,
                             'external_link': volume_info.get('infoLink', ''),
-                            'source': 'Google Books'
+                            'source': 'Google Books',
+                            'topic': book_topic  # Añadimos la categoría del libro
                         })
             except Exception as e:
                 print(f"Error fetching from Google Books API: {e}")
@@ -374,7 +395,7 @@ def book_entry(request, ISBN):
         'is_local': is_local,
         'reviews': reviews
     })
-    
+
 def book_trade_view(request):
     return render(request, 'trade_form.html')
 
@@ -481,3 +502,33 @@ class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         context['book'] = self.get_object().book
         return context
+
+def trade_form(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    users = User.objects.filter(have__book=book)  # Ajusta según tu modelo "Have"
+
+    if request.method == 'POST':
+        selected_user_id = request.POST.get('selected_user')
+        if selected_user_id:
+            selected_user = get_object_or_404(User, id=selected_user_id)
+
+            Exchange.objects.create(
+                user1=request.user.custom_user,  # Usuario actual
+                user2=selected_user,
+                book1=book,
+                book2=None,  # Si es un intercambio de un solo libro
+                location=request.user.custom_user.location,
+                status='proposed'
+            )
+
+
+            messages.success(request, f"Intercanvi confirmat amb {selected_user.name}!")
+            return redirect('trade_success')
+        else:
+            messages.error(request, "Has de seleccionar un usuari per confirmar l'intercanvi.")
+
+    return render(request, 'trade_form.html', {'users': users, 'book': book})
+
+def trade_success(request):
+    return render(request, 'trade_success.html')
+
