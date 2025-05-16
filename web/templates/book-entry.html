@@ -11,48 +11,80 @@
     {% block content %}
 
         <div class="book-entry-container">
-        <div class="book-info">
-        <h1>{{ mybook.title}}</h1>
-            <p> {{mybook.author }}</p>
-        <h2>{{mybook.topic}}</h2>
+            <div class="book-info">
+                <h1>{{ mybook.title}}</h1>
+                    <p> {{mybook.author }}</p>
+                <h2>{{mybook.topic}}</h2>
+                <p class="description">{{ mybook.description }}</p>
+            </div>
+            <div class="book-cover-entry">
+                <!-- Primera opción: Open Library -->
+                <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
+                     alt="Cover of {{ mybook.title }}"
+                     onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
+                     onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
+            </div>
+            <!-- 2nd option: Google Books - Script cargado desde archivo externo -->
 
         </div>
-            <div class="book-card img">
-                        <!-- Primera opción: Open Library -->
-                        <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
-                             alt="Cover of {{ book.title }}"
-                             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
-                             onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
-            </div>
-        </div>
         <div class="buttons-container">
-            <a href="{% url 'add_to_havelist' %}" class="button"> Add to my Havelist </a>
-            <a href="{% url 'add_to_wishlist' %}" class="button"> Add to my Wishlist </a>
+            <a href="{% url 'add_to_havelist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Havelist </a>
+            <a href="{% url 'add_to_wishlist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Wishlist </a>
             <a href="{% url 'book-trade' %}" class="button"> Look for a trade </a>
             <a href="{% url 'book-buy' %}" class="button"> Buy this book </a>
         </div>
+
+        <!-- Sección de Reviews -->
+        {% if is_local %}
+        <div class="reviews-section">
+            <h2>Reviews</h2>
+
+            <!-- Botón para añadir review -->
+            {% if user.is_authenticated %}
+                <div class="add-review">
+                    <a href="{% url 'review-create' mybook.ISBN %}" class="button review-button">Write a Review</a>
+                </div>
+            {% endif %}
+
+            <!-- Lista de reviews -->
+            {% if reviews %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="review-author">{{ review.user.name }}</span>
+                                <span class="review-date">{{ review.date|date:"F d, Y" }}</span>
+
+                                <!-- Opciones de edición para el autor de la review -->
+                                {% if user.is_authenticated and user.id == review.user.auth_user.id %}
+                                    <div class="review-actions">
+                                        <a href="{% url 'review-update' review.pk %}" class="review-edit">Edit</a>
+                                        <a href="{% url 'review-delete' review.pk %}" class="review-delete">Delete</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="review-content">
+                                <p>{{ review.text }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-reviews">No reviews yet. Be the first to review this book!</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="reviews-section external-book-notice">
+            <p class="notice">
+                This book is from an external source and is not yet in our database.
+                Reviews are only available for books in our local database.
+            </p>
+            {% if user.is_authenticated and user.is_staff %}
+                <a href="#" class="button add-to-database-button">Add this book to our database</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
      {% endblock %}
- <script>
-                    function fetchGoogleBooksCover(imgElement, isbn) {
-                        // Primero consultar la API para obtener el ID
-                        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.items && data.items.length > 0) {
-                                    // Obtener el ID del primer resultado
-                                    const bookId = data.items[0].id;
-                                    // Cambiar la URL de la imagen con el ID correcto
-                                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
-                                } else {
-                                    // No hay resultados, usar imagen predeterminada
-                                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching Google Books data:', error);
-                                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                            });
-                    }
-                    </script>
-</body>
+                                    </body>
 </html>

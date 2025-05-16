@@ -5,8 +5,8 @@ from django.db import transaction
 from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
-from django.views.generic.edit import CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
 import datetime
@@ -119,17 +119,28 @@ def books(request):
         queryset = queryset.filter(title__icontains=title)
 
     if topic:
-        queryset = queryset.filter(topic=topic)
+        # Usamos icontains para hacer la búsqueda más flexible
+        queryset = queryset.filter(topic__icontains=topic)
 
     # Obtenim llibres d'APIs externes si hi ha paràmetres de cerca
     external_books = []
-    if author or title:
+    if author or title or topic:
         # Cerca a Google Books API
-        search_term = f"{title} {author}".strip()
-        print(f"Cercant amb el terme: '{search_term}'")  # Logging
-        if search_term:
+        search_terms = []
+        if title:
+            search_terms.append(f"intitle:{title}")  # Mejorado para búsquedas más precisas
+        if author:
+            search_terms.append(f"inauthor:{author}")
+        if topic:
+            # Aseguramos que el tema se busca correctamente en Google Books
+            search_terms.append(f"subject:{topic}")
+
+        search_query = " ".join(search_terms).strip()
+        print(f"Cercant amb el terme: '{search_query}'")  # Logging
+
+        if search_query:
             try:
-                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_term}&maxResults=20"
+                api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_query}&maxResults=20"
                 print(f"Cridant API: {api_url}")  # Logging
                 google_response = requests.get(api_url)
                 print(f"Codi de resposta: {google_response.status_code}")  # Logging
@@ -139,14 +150,26 @@ def books(request):
                     print(f"Resultats obtinguts: {len(data.get('items', []))}")  # Logging
                     for item in data.get('items', []):
                         volume_info = item.get('volumeInfo', {})
+
+                        isbn = ''
+                        for identifier in volume_info.get('industryIdentifiers', []):
+                            if identifier.get('type') in ['ISBN_10', 'ISBN_13']:
+                                isbn = identifier.get('identifier', '')
+                                break
+
+                        # Extraemos categorías del libro si están disponibles
+                        categories = volume_info.get('categories', [])
+                        book_topic = categories[0] if categories else topic if topic else "General"
+
                         external_books.append({
                             'title': volume_info.get('title', 'Unknown Title'),
                             'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
                             'description': volume_info.get('description', ''),
                             'thumbnail_url': volume_info.get('imageLinks', {}).get('thumbnail', ''),
-                            'isbn': volume_info.get('industryIdentifiers', [{}])[0].get('identifier', ''),
+                            'ISBN': isbn,
                             'external_link': volume_info.get('infoLink', ''),
-                            'source': 'Google Books'
+                            'source': 'Google Books',
+                            'topic': book_topic  # Añadimos la categoría del libro
                         })
             except Exception as e:
                 print(f"Error fetching from Google Books API: {e}")
@@ -271,9 +294,58 @@ class CreateHaveView(LoginRequiredMixin, CreateView):
 
         return redirect(self.success_url)
 
-def book_entry(request,ISBN):
-    mybook = Book.objects.get(ISBN=ISBN)
-    return  render(request,'book-entry.html', {'mybook': mybook})
+
+def book_entry(request, ISBN):
+    try:
+        # Primero intenta encontrar el libro en la base de datos local
+        mybook = Book.objects.get(ISBN=ISBN)
+        is_local = True
+
+        # Obtener las reviews del libro si es local
+        reviews = Review.objects.filter(book=mybook).order_by('-date')
+
+    except Book.DoesNotExist:
+        # Si no existe localmente, buscar en fuentes externas (Google Books)
+        mybook = None
+        is_local = False
+        reviews = []  # No hay reviews para libros externos
+
+        try:
+            api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{ISBN}"
+            response = requests.get(api_url)
+
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('items'):
+                    # Tomar el primer resultado que coincida con el ISBN
+                    item = data['items'][0]
+                    volume_info = item.get('volumeInfo', {})
+
+                    # Crear un "libro virtual" con los mismos campos que el modelo Book
+                    mybook = {
+                        'ISBN': ISBN,
+                        'title': volume_info.get('title', 'Unknown Title'),
+                        'author': ', '.join(volume_info.get('authors', ['Unknown Author'])),
+                        'topic': volume_info.get('categories', ['General'])[0] if volume_info.get('categories') else 'General',
+                        'publish_date': volume_info.get('publishedDate', ''),
+                        'description': volume_info.get('description', ''),
+                        'thumbnail_url': volume_info.get('imageLinks', {}).get('thumbnail', ''),
+                        'external_link': volume_info.get('infoLink', ''),
+                        'source': 'Google Books'
+                    }
+        except Exception as e:
+            print(f"Error fetching book from API: {e}")
+
+    if not mybook:
+        messages.error(request, "Book not found in our database or external sources.")
+        return redirect('books')
+
+    # Pasar a la plantilla tanto el libro como un indicador de si es local o externo, y las reviews
+    return render(request, 'book-entry.html', {
+        'mybook': mybook,
+        'is_local': is_local,
+        'reviews': reviews
+    })
 
 def book_trade_view(request):
     return render(request, 'trade_form.html')
@@ -287,6 +359,99 @@ def wishlist_view(request):
 def havelist_view(request):
     return render(request, 'havelist.html')
 
+# Vista para crear una review
+class ReviewCreateView(LoginRequiredMixin, CreateView):
+    model = Review
+    fields = ['text']
+    template_name = 'review_form.html'
+
+    def form_valid(self, form):
+        # Get the custom User instance linked to the authenticated user
+        custom_user = User.objects.get(auth_user=self.request.user)
+        form.instance.user = custom_user
+
+        # Verify if the book exists in the local database
+        isbn = self.kwargs['isbn']
+        try:
+            book = Book.objects.get(ISBN=isbn)
+            form.instance.book = book
+            return super().form_valid(form)
+        except Book.DoesNotExist:
+            # If the book doesn't exist locally, show an error message
+            messages.error(self.request, "You can only review books that exist in our local database.")
+            return redirect('book-entry', ISBN=isbn)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        isbn = self.kwargs['isbn']
+        try:
+            context['book'] = Book.objects.get(ISBN=isbn)
+        except Book.DoesNotExist:
+            # Try to get book information from API
+            try:
+                api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
+                response = requests.get(api_url)
+
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('items'):
+                        # Take the first result that matches the ISBN
+                        item = data['items'][0]
+                        volume_info = item.get('volumeInfo', {})
+
+                        # Create a "virtual book"
+                        context['book'] = {
+                            'ISBN': isbn,
+                            'title': volume_info.get('title', 'Unknown Title'),
+                        }
+            except Exception as e:
+                print(f"Error fetching book from API: {e}")
+                context['book'] = {'ISBN': isbn, 'title': 'Unknown Book'}
+
+        context['action'] = 'Create'
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('book-entry', kwargs={'ISBN': self.kwargs['isbn']})
+
+
+# Vista para actualizar una review
+class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Review
+    fields = ['text']
+    template_name = 'review_form.html'
+
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.user.auth_user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['book'] = self.get_object().book
+        context['action'] = 'Update'
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
+
+
+# Vista para eliminar una review
+class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Review
+    template_name = 'review_confirm_delete.html'
+
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.user.auth_user
+
+    def get_success_url(self):
+        return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['book'] = self.get_object().book
+        return context
+
 def trade_form(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     users = User.objects.filter(have__book=book)  # Ajusta según tu modelo "Have"
@@ -295,7 +460,7 @@ def trade_form(request, book_id):
         selected_user_id = request.POST.get('selected_user')
         if selected_user_id:
             selected_user = get_object_or_404(User, id=selected_user_id)
-        
+
             Exchange.objects.create(
                 user1=request.user.custom_user,  # Usuario actual
                 user2=selected_user,
@@ -304,10 +469,10 @@ def trade_form(request, book_id):
                 location=request.user.custom_user.location,
                 status='proposed'
             )
-            
-    
+
+
             messages.success(request, f"Intercanvi confirmat amb {selected_user.name}!")
-            return redirect('trade_success') 
+            return redirect('trade_success')
         else:
             messages.error(request, "Has de seleccionar un usuari per confirmar l'intercanvi.")
 

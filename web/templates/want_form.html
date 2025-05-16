@@ -9,7 +9,7 @@
     <form method="post" class="login-form">
         {% csrf_token %}
         
-        <div class="book-info">
+        <div class="book-info2">
             <h3>{{ request.GET.title }}</h3>
             <p>by {{ request.GET.author }}</p>
             {% if request.GET.isbn %}

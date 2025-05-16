@@ -3,13 +3,9 @@
 {% block title %}Books - Library{% endblock %}
 {% load static %}
 
-
-
 {% block content %}
 <div class="books-container">
     <script src="{% static 'js/book_autocomplete.js' %}"></script>
-</div>
-<div class="books-container">
     <h1>Our books</h1>
 
     <!-- Formulari de cerca -->
@@ -20,9 +16,19 @@
                 <input id="id_title" type="text" name="title" placeholder="Book title..." value="{{ request.GET.title }}">
                 <select name="topic">
                     <option value="">All topics</option>
-                    <option value="Fantasia" {% if request.GET.topic == "Fantasia" %}selected{% endif %}>Fantasia</option>
-                    <option value="Novel·la" {% if request.GET.topic == "Novel·la" %}selected{% endif %}>Novel·la</option>
-                    <option value="Distopia" {% if request.GET.topic == "Distopia" %}selected{% endif %}>Distopia</option>
+                    <option value="Fiction" {% if request.GET.topic == "Fiction" %}selected{% endif %}>Fiction</option>
+                    <option value="Fantasy" {% if request.GET.topic == "Fantasy" %}selected{% endif %}>Fantasy</option>
+                    <option value="Science Fiction" {% if request.GET.topic == "Science Fiction" %}selected{% endif %}>Science Fiction</option>
+                    <option value="Mystery" {% if request.GET.topic == "Mystery" %}selected{% endif %}>Mystery</option>
+                    <option value="Romance" {% if request.GET.topic == "Romance" %}selected{% endif %}>Romance</option>
+                    <option value="Biography" {% if request.GET.topic == "Biography" %}selected{% endif %}>Biography</option>
+                    <option value="History" {% if request.GET.topic == "History" %}selected{% endif %}>History</option>
+                    <option value="Children" {% if request.GET.topic == "Children" %}selected{% endif %}>Children</option>
+                    <option value="Business" {% if request.GET.topic == "Business" %}selected{% endif %}>Business</option>
+                    <option value="Art" {% if request.GET.topic == "Art" %}selected{% endif %}>Art</option>
+                    <option value="Computers" {% if request.GET.topic == "Computers" %}selected{% endif %}>Computers</option>
+                    <option value="Cooking" {% if request.GET.topic == "Cooking" %}selected{% endif %}>Cooking</option>
+                    <option value="Health" {% if request.GET.topic == "Health" %}selected{% endif %}>Health</option>
                 </select>
             </div>
             <button type="submit" class="search-button">Search</button>
@@ -106,72 +112,6 @@
             }
           });
     </script>
-    {% if books %}
-        <div class="books-grid">
-            {% for book in books %}
-                <div class="book-card">
-                    <!-- Nueva sección de portada -->
-                    <div class="book-cover">
-                        <!-- Primera opción: Open Library -->
-                        <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
-                             alt="Cover of {{ book.title }}"
-                             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
-                             onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
-                    </div>
-
-                    <!-- Añadir este script al final de la página -->
-                    <script>
-                    function fetchGoogleBooksCover(imgElement, isbn) {
-                        // Primero consultar la API para obtener el ID
-                        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.items && data.items.length > 0) {
-                                    // Obtener el ID del primer resultado
-                                    const bookId = data.items[0].id;
-                                    // Cambiar la URL de la imagen con el ID correcto
-                                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
-                                } else {
-                                    // No hay resultados, usar imagen predeterminada
-                                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching Google Books data:', error);
-                                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                            });
-                    }
-                    </script>
-                    <!-- Contenido original -->
-                    <a href="/books/entry/{{ book.ISBN }}/"><h2>{{ book.title }}</h2></a>
-
-                    <p class="author">by {{ book.author }}</p>
-                    {% if book.co_authors.exists %}
-                        <p class="co-authors">
-                            Co-authors:
-                            {% for co_author in book.co_authors.all %}
-                                {{ co_author.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                    {% endif %}
-                    <p class="book-details">
-                        <span class="category">{{ book.get_category_display }}</span>
-                        <span class="pages">{{ book.page_count }} pages</span>
-                    </p>
-                    <p class="price">${{ book.price }}</p>
-                    <div class="book-footer">
-                        <span class="availability {% if book.in_stock %}available{% else %}unavailable{% endif %}">
-                            {% if book.in_stock %}In stock{% else %}Out of stock{% endif %}
-                        </span>
-                        <span class="isbn">ISBN: {{ book.isbn }}</span>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="no-books">No books available at the moment.</p>
-    {% endif %}
-
 </div>
 
 <style>
@@ -235,6 +175,28 @@
         background-color: #f9f9f9;
         padding: 20px;
         border-radius: 8px;
+    }
+    
+    /* Aseguramos que la grid funcione correctamente para ambos tipos de libros */
+    .books-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    
+    /* Aseguramos que las tarjetas de libros externos tengan el mismo comportamiento */
+    .book-card {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 </style>
 {% endblock %}

@@ -6,4 +6,5 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app 
+      - .:/app
+    shm_size: '2gb'  # Increase shared memory size for Chrome 
