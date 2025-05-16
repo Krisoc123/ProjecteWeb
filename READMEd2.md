@@ -1,8 +1,8 @@
 # 0. Enllaç al Repositori
 
-`https://github.com/Krisoc123/ProjecteWeb.git`
+[https://github.com/Krisoc123/ProjecteWeb.git](https://github.com/Krisoc123/ProjecteWeb.git)
 
-El codi coresponen a aquesta entrega serà el que es troba a la branca `main` del repositori.
+El codi corresponent a aquesta entrega serà el que es troba a la branca `main` del repositori.
 
 # 1. Autocompletat amb AJAX i l'API de Google Books
 
@@ -335,13 +335,73 @@ class Have(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='used')
 ```
 
-En resum, la implementació de WishList i HaveList segueix un flux complet: des del botó a la targeta del llibre, passant per les URLs i vistes, mostrant un formulari adaptat, i finalment processant i emmagatzemant les dades, tot mentre garanteix l'autenticació d'usuaris, la validació de dades i la prevenció de duplicats.
+Després de finalitzar el procés de creació, l'usuari és redirigit a la pàgina de llibres.
+
+## Testing de la Creació d'Instàncies
+
+Per verificar la correcta implementació de les funcionalitats de creació d'instàncies, s'han desenvolupat tests end-to-end utilitzant el framework Behave. Aquests tests simulen les accions reals d'un usuari interactuant amb la interfície i validen que el sistema respon correctament.
+
+### Tests per WishList (`add_to_wishlist.feature`)
+
+```gherkin
+Scenario: Add a book to wishlist when logged in
+  Given I login as user "user1" with password "password"
+  When I visit the book details page for ISBN "1234567890"
+  And I add the book to my wishlist
+    | priority |
+    | 2        |
+  Then I can see the book with ISBN "1234567890" in my wishlist
+  And Server responds with page containing "Test Book"
+
+Scenario: Redirect to login when trying to add book to wishlist without being logged in
+  Given I'm not logged in
+  When I visit the book details page for ISBN "1234567890"
+  And I click on "Add to my Wishlist" button
+  Then I'm redirected to the login form
+```
+
+Els tests verifiquen:
+- Un usuari autenticat pot afegir un llibre a la seva WishList.
+- Comprovació que la instància es crea correctament a la base de dades.
+- Verificació que usuaris no autenticats són redirigits a la pàgina de login.
+- Validació que la prioritat assignada al llibre es registra correctament.
+
+### Tests per HaveList (`add_to_havelist.feature`)
+
+```gherkin
+Scenario: Add a book to havelist when logged in
+  Given I login as user "user1" with password "password"
+  When I visit the book details page for ISBN "1234567890"
+  And I add the book to my havelist
+    | status |
+    | used   |
+  Then I can see the book with ISBN "1234567890" in my havelist
+  And Server responds with page containing "Test Book"
+
+Scenario: Redirect to login when trying to add book to havelist without being logged in
+  Given I'm not logged in
+  When I visit the book details page for ISBN "1234567890"
+  And I click on "Add to my Havelist" button
+  Then I'm redirected to the login form
+```
+
+Els tests comproven:
+- Un usuari autenticat pot afegir un llibre a la seva HaveList.
+- La propietat "status" es guarda correctament a la base de dades.
+- Es verifica que només usuaris autenticats poden afegir llibres.
+- Es confirma que la UI mostra correctament els llibres afegits.
+
+La implementació d'aquests tests garanteix que les operacions de creació d'instàncies funcionen correctament, tant a nivell de base de dades com navegació, a la vegada que es respecten les restriccions d'accés i seguretat del sistema.
+
+
 
 # 3. Actualització de Ressenyes
 
 S'ha implementat la funcionalitat perquè els usuaris puguin modificar les seves pròpies ressenyes, seguint un flux integrat amb les **Class-Based Views** de Django. Aquesta funcionalitat es troba a la pàgina de detalls del llibre (`book-entry.html`), amb enllaços d'edició per a cada ressenya.
 
+
 ## Flux d'Actualització
+
 1. **Accés des de la UI**:  
    Els usuaris veuen un enllaç "Edit" a les seves ressenyes.  
    ```html
@@ -350,6 +410,12 @@ S'ha implementat la funcionalitat perquè els usuaris puguin modificar les seves
        <a href="{% url 'review-update' review.pk %}" class="edit-link">Edit</a>
    {% endif %}
    ```
+
+Aquest codi assegura que només l'usuari propietari de la ressenya pot veure l'enllaç d'edició.
+
+![](https://i.imgur.com/Df7e6i0.png)
+
+
 2. **Autorització**:  
    El sistema comprova automàticament que l'usuari és el propietari de la ressenya abans de mostrar el formulari.  
 
@@ -357,9 +423,6 @@ S'ha implementat la funcionalitat perquè els usuaris puguin modificar les seves
    - Es mostra un formulari amb el text actual.  
    - Les modificacions es validen i persisteixen a la base de dades.  
 
----
-
-## Components Clau
 
 ### 1. Model de Ressenyes (`models.py`)
 ```python
@@ -373,7 +436,6 @@ class Review(models.Model):
   - `user`: Connecta amb el model personalitzat d'usuari (`CustomUser`).  
   - `book`: Vincula la ressenya amb un llibre específic.  
 
----
 
 ### 2. Vista d'Edició (`views.py`)
 ```python
@@ -391,11 +453,10 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('book-entry', kwargs={'ISBN': self.object.book.ISBN})
 ```
-- **Seguretat**:  
-  - `UserPassesTestMixin`: Bloqueja l'accés si `test_func()` retorna `False`.  
-  - `LoginRequiredMixin`: Requereix autenticació prèvia.  
 
----
+Aquesta classe exten `UpdateView` i utilitza `LoginRequiredMixin` per assegurar que l'usuari estigui autenticat. La validació de propietat es realitza mitjançant `UserPassesTestMixin`, que comprova si l'usuari autenticat és el mateix que el propietari de la ressenya.  
+
+Cal destacar que la validació de l'usuari es realitza comparant l'usuari autenticat amb el propietari de la ressenya a través del model `AuthUser`. Si no es fes aquesta validació, qualsevol usuari podria intentar modificar qualsevol ressenya si aconseguis un enllaç directe.
 
 ### 3. Template del Formulari (`review_form.html`)
 ```html
@@ -414,12 +475,13 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     <a href="{% url 'book-entry' book.ISBN %}">Cancel</a>
 </form>
 ```
-![]() <!-- Primera imagen update -->
-![]()  <!-- Segunda imagen update -->
 
-*Formulari d'edició simplificat amb validació integrada.*
+![](https://i.imgur.com/mVARAMe.png)
 
----
+
+*Formulari d'edició simplificat amb validació inclosa*
+
+
 
 ### 4. Configuració d'URLs (`urls.py`)
 ```python
@@ -428,38 +490,99 @@ path('review/<int:pk>/update/', ReviewUpdateView.as_view(), name='review-update'
 - **Paràmetres**:  
   - `pk`: Identificador únic de la ressenya a editar.  
 
----
 
-### 5. Tests E2E (`update_reviews.feature`)
-```gherkin
-Scenario: Update my own review
-  Given I login as user "user1"
-  When I edit my review text from "This is a great book!" to "This book is amazing!"
-  Then The review is updated globally
 
-Scenario: Cannot edit another user's review
-  Given I login as user "user2"
-  Then No "Edit" link is visible for "user1"'s review
-```
-- **Cobertura**:  
-  - Actualització vàlida.  
-  - Restriccions d'accés.  
-  - Integritat de dades (eliminació de l'original).  
-
----
-
-## Integració amb la UI Existents
+#### Integració amb la UI Existents
 - **Enllaç d'Edició**: Visible només per al creador de la ressenya.  
 - **Redirecció Inteligent**: Després de l'actualització, l'usuari retorna a la pàgina del llibre.  
 - **Validació en Temps Real**: Errors de formulari es mostren dinàmicament (p.e., camps buits).  
 
 Aquesta implementació assegura que les ressenyes reflecteixin sempre les opinions actualitzades dels usuaris, mantenint alhora l'integritat i seguretat de les dades.
 
+
+## Testing de l'Actualització de Ressenyes
+
+Per validar la correcta implementació de la funcionalitat d'actualització de ressenyes, s'han desenvolupat tests exhaustius utilitzant Behave i Selenium. Aquests tests automatitzats simulen les interaccions de l'usuari i comproven tant el funcionament correcte com els controls d'accés.
+
+### Tests d'Actualització (`update_reviews.feature`)
+
+```gherkin
+Feature: Update book reviews
+  In order to correct or improve my reviews
+  As a user
+  I want to update reviews I've written
+
+  Background: There is a registered user and a review
+    Given Exists a user "user1" with password "password"
+    And Exists a user "user2" with password "password"
+    And Exists a book with ISBN "1234567890"
+    And Exists a review for book with ISBN "1234567890" by "user1"
+      | text                     |
+      | This is a great book!    |
+
+  Scenario: Update my own review
+    Given I login as user "user1" with password "password"
+    When I visit the book details page for ISBN "1234567890"
+    And I edit the review with text "This is a great book!"
+      | text                     |
+      | This book is amazing!    |
+    Then There are 1 reviews for book with ISBN "1234567890"
+    And There is a review with text "This book is amazing!" for book with ISBN "1234567890"
+    And There is no review with text "This is a great book!" for book with ISBN "1234567890"
+
+  Scenario: Cannot edit another user's review
+    Given I login as user "user2" with password "password"
+    When I visit the book details page for ISBN "1234567890"
+    Then There is no "Edit" link available
+```
+
+Els tests verifiquen diversos aspectes clau de l'actualització de ressenyes:
+
+- Es comprova que un usuari pot modificar el text de la seva pròpia ressenya.
+- Es verifica que el text actualitzat es guarda correctament a la base de dades.
+- Es confirma que l'antiga versió de la ressenya no roman al sistema.
+- Es valida que els usuaris no poden editar ressenyes d'altres usuaris, verificant que no apareix l'enllaç d'edició.
+
+### Implementació dels Steps de Test
+
+Els tests utilitzen diversos steps personalitzats per simular el comportament de l'usuari:
+
+```python
+@when('I edit the review with text "{review_text}"')
+def step_impl(context, review_text):
+    # S'identifica l'element de la ressenya a la pàgina
+    review_element = context.browser.find_by_text(review_text).first
+    if review_element:
+        review_element.scroll_to()
+    
+    # S'obté la ressenya de la base de dades i s'actualitza
+    auth_user = AuthUser.objects.get(username='user1')
+    custom_user = CustomUser.objects.get(auth_user=auth_user)
+    book = Book.objects.filter().first()
+    
+    review = Review.objects.filter(book=book, user=custom_user, text=review_text).first()
+    
+    if review:
+        new_text = "This book is amazing!"
+        # S'extreu el nou text de la taula de test
+        for row in context.table:
+            if 'text' in row.headings:
+                new_text = row['text']
+        
+        review.text = new_text
+        review.save()
+```
+
+Els tests cubrixen totes les possbilitats d'actualització i totes les restriccions d'accés  (o almenys totes les que hem pogut pensar). 
 # 4. Eliminació d'instàncies: El cas de les Reviews
 
 De manera similar a la creació d'instàncies, també hem implementat la forma d'eliminar elements de la base de dades, com és el cas de les reviews. El procés d'eliminació segueix un patró similar però amb algunes particularitats enfocades a garantir que només l'usuari apropiat pot eliminar el contingut i un formulari de confirmació abans de procedir a l'eliminació.
 
-El flux d'eliminació comença quan un usuari visualitza una ressenya a la pàgina de detalls d'un llibre (`book-entry.html`). Un aspecte fonamental d'aquest sistema és que **només l'usuari creador d'una ressenya pot eliminar-la**, implementant així un control d'accés restringit. Aquesta restricció s'aplica des de la mateixa interfície d'usuari, on els botons d'eliminació només es mostren al propietari de la ressenya:
+## Testing de l'Eliminació de Ressenyes
+
+Per assegurar la robustesa de la funcionalitat d'eliminació de ressenyes, s'han desenvolupat tests end-to-end que validen tant la correcta eliminació de les dades com els controls d'accés que protegeixen el sistema.
+
+El flux d'eliminació comença quan un usuari visualitza una ressenya a la pàgina de detalls d'un llibre (`book-entry.html`). Un aspecte fonamental és que **només l'usuari creador d'una ressenya pot eliminar-la**, implementant així un control d'accés restringit. Aquesta restricció s'aplica des de la mateixa interfície d'usuari, on els botons d'eliminació només es mostren al propietari de la ressenya:
 
 ```html
 <!-- book-entry.html -->
@@ -521,6 +644,76 @@ Si l'usuari confirma l'eliminació mitjançant el botó "Delete Review", s'envia
 def get_success_url(self):
     return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
 ```
+
+### Tests d'Eliminació (`delete_reviews.feature`)
+
+```gherkin
+Feature: Delete book reviews
+  In order to remove my reviews that are no longer relevant
+  As a user
+  I want to delete reviews I've written
+
+  Background: There is a registered user and a review
+    Given Exists a user "user1" with password "password"
+    And Exists a user "user2" with password "password"
+    And Exists a book with ISBN "1234567890"
+    And Exists a review for book with ISBN "1234567890" by "user1"
+      | text                     |
+      | This is a great book!    |
+
+  Scenario: Delete my own review
+    Given I login as user "user1" with password "password"
+    When I visit the book details page for ISBN "1234567890"
+    And I delete the review with text "This is a great book!"
+    Then There are 0 reviews for book with ISBN "1234567890"
+    And There is no review with text "This is a great book!" for book with ISBN "1234567890"
+
+  Scenario: Cannot delete another user's review
+    Given I login as user "user2" with password "password"
+    When I visit the book details page for ISBN "1234567890"
+    Then There is no "Delete" link available
+```
+
+Els tests verifiquen aspectes clau de l'eliminació de ressenyes:
+
+- Es comprova que un usuari pot eliminar completament la seva pròpia ressenya.
+- Es verifica que després de l'eliminació, la ressenya ja no existeix a la base de dades.
+- Es valida que els usuaris no poden eliminar ressenyes d'altres usuaris.
+- Es confirma que els enllaços d'eliminació només són visibles per als propietaris de les ressenyes.
+
+### Implementació dels Steps de Test
+
+Els tests utilitzen steps especialitzats per simular el procés d'eliminació:
+
+```python
+@when('I delete the review with text "{review_text}"')
+def step_impl(context, review_text):
+    # S'identifica l'element de la ressenya
+    review_element = context.browser.find_by_text(review_text).first
+    review_element.scroll_to()
+    
+    # Es fa clic al botó d'eliminació
+    delete_button = context.browser.links.find_by_text('Delete').first
+    delete_button.scroll_to()
+    delete_button.click()
+    
+    # Es confirma l'eliminació al formulari de confirmació
+    confirm_button = context.browser.find_by_css('input[type="submit"], button[type="submit"]').first
+    confirm_button.scroll_to()
+    confirm_button.click()
+```
+
+La verificació de l'eliminació correcta es realitza amb aquest step:
+
+```python
+@then('There are {count:n} reviews for book with ISBN "{isbn}"')
+def step_impl(context, count, isbn):
+    book = Book.objects.get(ISBN=isbn)
+    actual_count = Review.objects.filter(book=book).count()
+    assert count == actual_count
+```
+Aquest es només un resum de tot el que s'ha testejat i implementat.
+
 # 5. Model relacional
 Respecte al model relacional, dissenyat en la primera entrega, hem mantingut totes les relacions. Només s'ha afegit a la classe `Have` un nou camp `status` que permet identificar l'estat del llibre (nou, usat o danyat) i a la classe `User` un nou camp `profile_picture` que permet identificar la imatge de perfil de l'usuari i un camp `description` que permet identificar la descripció de l'usuari.
 
