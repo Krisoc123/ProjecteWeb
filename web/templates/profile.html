@@ -5,8 +5,6 @@
 <h1>Perfil de {{ user.name}}</h1>
 
 <!-- Info básica -->
-
-<!-- Info básica -->
 <div class="profile-content" style="display: flex; gap: 2rem; align-items: flex-start;">
 
   <!-- Sección izquierda -->
@@ -57,14 +55,13 @@
           <p class="book-title">{{ item.book.title }}</p>
           <p class="book-author">{{ item.book.author }}</p>
           <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
-              {% csrf_token %}
-              <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
-              <input type="hidden" name="list_type" value="have">
-              <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
-                <i class="fas fa-trash-alt"></i>
-              </button>
+            {% csrf_token %}
+            <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
+            <input type="hidden" name="list_type" value="have">
+            <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
+              <div class="delete-circle">×</div>
+            </button>
           </form>
-
         </div>
       {% empty %}
         <div class="empty-message">No has añadido libros que tienes.</div>
@@ -87,9 +84,14 @@
           >
           <p class="book-title">{{ item.book.title }}</p>
           <p class="book-author">{{ item.book.author }}</p>
-          <div class="delete-book-icon">
-              <i class="fas fa-trash-alt" title="Eliminar libro"></i>
-            </div>
+          <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
+            <input type="hidden" name="list_type" value="want">
+            <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
+              <div class="delete-circle">×</div>
+            </button>
+          </form>
         </div>
       {% empty %}
         <div class="empty-message">No has añadido libros que deseas.</div>
@@ -172,8 +174,27 @@
         console.error("Error fetching Google Books cover:", error);
         });
     }
+    // Mostrar mensaje cuando se elimina un libro
+    document.querySelectorAll('.delete-book-icon').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const form = this.closest('form');
 
+        // Mostrar mensaje
+        const confirmation = document.getElementById('delete-confirmation');
+        confirmation.classList.add('show');
+
+        // Enviar formulario después de animación
+        setTimeout(() => {
+          form.submit();
+        }, 300);
+
+        // Ocultar mensaje después de 3 segundos
+        setTimeout(() => {
+          confirmation.classList.remove('show');
+        }, 3000);
+      });
+    });
 </script>
-
 
 {% endblock %}

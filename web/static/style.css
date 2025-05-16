@@ -999,30 +999,64 @@ footer {
 }
 
 /* Estilo para cada tarjeta de libro */
+/* Contenedor principal del libro */
 .book-card {
-  flex: 0 0 auto;
-  width: 150px !important;
-  text-align: center;
-  scroll-snap-align: start;
+  position: relative;
+  width: 150px;
+  min-height: 320px; /* Altura mínima ajustada */
   display: flex;
   flex-direction: column;
-  height: auto;
+  justify-content: space-between; /* Distribuye el espacio */
+  margin-bottom: 0; /* Elimina margen inferior */
+  padding-bottom: 30px; /* Espacio para el icono */
 }
 
-/* Imagen de la portada del libro */
+/* Imagen de portada - MODIFICADO */
 .book-thumbnail {
   width: 100%;
-  height: 200px;
+  height: auto;
+  aspect-ratio: 2/3; /* Relación de aspecto fija */
+  max-height: 200px;
   object-fit: cover;
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  margin-bottom: 0.75rem;
-  transition: transform 0.2s ease-in-out;
 }
 
-.book-thumbnail:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Contenedor de texto - NUEVO */
+.book-text-container {
+  padding: 8px 4px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Icono de basura - MODIFICADO */
+/* Icono de basura - MODIFICADO (ahora visible) */
+.delete-book-icon {
+  width: 30px;           /* Cambia este valor para el tamaño */
+  height: 30px;          /* Cambia este valor para el tamaño */
+  border-radius: 50%;
+  background-color: #ff4444;
+  color: white;
+  font-size: 20px;       /* Tamaño de la cruz */
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  position: absolute;
+  top: 10px;            /* Posición vertical */
+  right: 10px;          /* Posición horizontal */
+  border: 2px solid white;
+  line-height: 1;
+}
+
+.delete-circle:hover {
+  background-color: #ff0000;
+  transform: scale(1.1);
 }
 
 .book-thumbnail.placeholder {
@@ -1083,24 +1117,13 @@ footer {
 
   .book-card {
     width: 130px !important;
+    position: relative; /* Añadido */
+    padding-bottom: 1.5rem; /* Espacio para el botón */
   }
 
   .book-thumbnail {
     height: 180px;
   }
-}
-
-/* Estilo para el botón de "eliminar libro " */
-
-.delete-book-icon {
-    margin-top: 0.25rem;
-    color: #999;
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
-
-.delete-book-icon:hover {
-    color: #ff4d4d;
 }
 
 
@@ -1125,3 +1148,51 @@ footer {
     opacity: 1;
 }
 
+
+
+/* Asegurar que el formulario no añada espacio extra */
+.book-card form {
+  margin: 0;
+  padding: 0;
+}
+
+/* Mejorar el hover de la tarjeta */
+.book-card:hover .book-thumbnail {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajustar el espacio para el título/autor */
+.book-card > p {
+  margin: 0.2rem 0;
+  padding: 0 0.2rem;
+}
+.trash-circle img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.trash-circle {
+  width: 30px;          /* Nuevo tamaño */
+  height: 30px;         /* Nuevo tamaño */
+  border-radius: 50%;
+  background-color: #ff4444;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  font-size: 18px;      /* Tamaño de la cruz */
+  font-weight: bold;
+  border: 2px solid white;
+}
+.trash-circle::after {
+  content: "×";        /* Símbolo de cruz */
+}
+
+.trash-circle:hover {
+  background-color: #ff0000;
+}
