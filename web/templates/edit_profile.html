@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Editar Perfil de {{ user.name }}</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <section>
+        <div>
+            <label for="{{ form.name.id_for_label }}">Nombre:</label><br>
+            {{ form.name }}
+            {{ form.name.errors }}
+        </div>
+
+        <div>
+            <label for="{{ form.last_name.id_for_label }}">Apellidos:</label><br>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </div>
+
+        <div>
+            <label for="{{ form.email.id_for_label }}">Correo electrónico:</label><br>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+
+        {% if form.profile_picture %}
+            <div>
+                <label for="{{ form.profile_picture.id_for_label }}">Foto de perfil:</label><br>
+                {{ form.profile_picture }}
+                {{ form.profile_picture.errors }}
+            </div>
+        {% endif %}
+    </section>
+
+    <br>
+    <button type="submit">Guardar cambios</button>
+    <a href="{% url 'profile' %}">Cancelar</a>
+</form>
+{% endblock %}

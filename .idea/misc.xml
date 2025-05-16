@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Poetry (DjangoProject3)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.12.3 WSL (Ubuntu): (/home/wellin/.virtualenvs/ProjecteWeb/bin/python)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10.12 WSL (Ubuntu): (/usr/bin/python3)" project-jdk-type="Python SDK" />
 </project>

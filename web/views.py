@@ -2,6 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction
+
+
+from django.views.decorators.http import require_POST
+
+
 from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
@@ -9,6 +14,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
+from .forms import UserProfileForm
+
 import datetime
 
 import requests
@@ -79,7 +86,20 @@ def profile_view(request):
             'email': request.user.email
         }
     )
-    
+    if request.method == 'POST' and 'profile_picture' in request.FILES:
+        custom_user.profile_picture = request.FILES['profile_picture']
+        custom_user.save()
+        return redirect('profile')
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=custom_user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=custom_user)
+
     # Now use custom_user for your queries
     have_list = Have.objects.filter(user=custom_user)
     want_list = Want.objects.filter(user=custom_user)
@@ -99,7 +119,38 @@ def profile_view(request):
     
     return render(request, 'profile.html', context)
 
+@require_POST
+@login_required
+def delete_book_from_list(request):
+    isbn = request.POST.get('isbn')
+    list_type = request.POST.get('list_type')
+    custom_user = User.objects.get(auth_user=request.user)
 
+    if list_type == 'have':
+        item = get_object_or_404(Have, user=custom_user, book__ISBN=isbn)
+    elif list_type == 'want':
+        item = get_object_or_404(Want, user=custom_user, book__ISBN=isbn)
+    else:
+        messages.error(request, "Tipo de lista no válido.")
+        return redirect('profile')
+
+    item.delete()
+    messages.success(request, "Libro eliminado correctamente.")
+    return redirect('profile')
+
+
+@login_required
+def editar_perfil(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # O como se llame tu vista de perfil
+    else:
+        form = UserProfileForm(instance=user)
+
+    return render(request, 'editar_perfil.html', {'form': form})
 
 def books(request):
     # Obtenim els paràmetres de cerca
@@ -393,6 +444,8 @@ def wishlist_view(request):
 
 def havelist_view(request):
     return render(request, 'havelist.html')
+
+
 
 # Vista para crear una review
 class ReviewCreateView(LoginRequiredMixin, CreateView):
