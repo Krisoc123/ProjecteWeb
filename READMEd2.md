@@ -219,6 +219,8 @@ path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist')
 
 Quan la petició arriba a la vista, s'executa el mètode GET. Hem implementat dues classes: `CreateWantView` i `CreateHaveView`, que hereten de `LoginRequiredMixin` (per assegurar que l'usuari està autenticat) i `CreateView` (per gestionar la creació de nous objectes). 
 
+Si l'usuari no està autenticat, el sistema redirigeix automàticament a la pàgina d'inici de sessió (`LoginRequiredMixin` s'encarrega d'això). 
+
 ```python
 # views.py
 class CreateWantView(LoginRequiredMixin, CreateView):
@@ -335,3 +337,69 @@ class Have(models.Model):
 
 En resum, la implementació de WishList i HaveList segueix un flux complet: des del botó a la targeta del llibre, passant per les URLs i vistes, mostrant un formulari adaptat, i finalment processant i emmagatzemant les dades, tot mentre garanteix l'autenticació d'usuaris, la validació de dades i la prevenció de duplicats.
 
+## Eliminació d'instàncies: El cas de les Reviews
+
+De manera similar a la creació d'instàncies, també hem implementat la forma d'eliminar elements de la base de dades, com és el cas de les reviews. El procés d'eliminació segueix un patró similar però amb algunes particularitats enfocades a garantir que només l'usuari apropiat pot eliminar el contingut i un formulari de confirmació abans de procedir a l'eliminació.
+
+El flux d'eliminació comença quan un usuari visualitza una ressenya a la pàgina de detalls d'un llibre (`book-entry.html`). Un aspecte fonamental d'aquest sistema és que **només l'usuari creador d'una ressenya pot eliminar-la**, implementant així un control d'accés restringit. Aquesta restricció s'aplica des de la mateixa interfície d'usuari, on els botons d'eliminació només es mostren al propietari de la ressenya:
+
+```html
+<!-- book-entry.html -->
+{% if user.is_authenticated and user.id == review.user.auth_user.id %}
+    <div class="review-actions">
+        <a href="{% url 'review-update' review.pk %}" class="review-edit">Edit</a>
+        <a href="{% url 'review-delete' review.pk %}" class="review-delete">Delete</a>
+    </div>
+{% endif %}
+```
+
+La condició `user.id == review.user.auth_user.id` garanteix que aquests controls només apareixen per a l'autor original de la ressenya, ocultant-los completament per a la resta d'usuaris. Això és només un primer pas, ja que si algú deduís la URL d'eliminació, encara podria intentar eliminar la ressenya. 
+
+Quan l'usuari fa clic en el botó "Delete", el sistema inicia una seqüència controlada per la classe `ReviewDeleteView`. Aquesta vista, configurada al fitxer `urls.py`, intercepta la petició:
+
+```python
+# urls.py
+path('review/<int:pk>/delete/', ReviewDeleteView.as_view(), name='review-delete'),
+```
+
+La vista d'eliminació hereta de tres classes fonamentals per garantir seguretat i funcionalitat adequades:
+- `LoginRequiredMixin`: Assegura que només usuaris autenticats poden accedir a aquesta vista
+- `UserPassesTestMixin`: **Implementa la restricci que garanteix que només el creador de la ressenya pot eliminar-la**
+- `DeleteView`: Proporciona la funcionalitat bàsica per eliminar objectes del model
+
+```python
+# views.py
+class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Review
+    template_name = 'review_confirm_delete.html'
+
+    def test_func(self):
+        review = self.get_object()
+        return self.request.user == review.user.auth_user
+```
+
+El mètode `test_func()` constitueix el punt central del nostre sistema de seguretat. Aquesta funció és invocada automàticament per Django abans de permetre l'accés a la vista i proporciona una segona capa de protecció (més enllà de la interfície d'usuari) que verifica que l'usuari actual és efectivament el propietari de la ressenya. Si aquesta comprovació falla —per exemple, si algú intentés manipular les URL directament per eliminar una ressenya aliena— Django bloquejarà completament l'accés, retornant un error 403 Forbidden i impedint qualsevol intent d'eliminació no autoritzada.
+
+Quan l'usuari accedeix a aquesta vista, se li mostra una pantalla de confirmació (`review_confirm_delete.html`) que detalla quina ressenya està a punt d'eliminar i demana confirmació per procedir:
+
+```html
+<!-- review_confirm_delete.html -->
+<div class="delete-confirmation">
+    <h1>Delete Review</h1>
+    <p>Are you sure you want to delete your review for "{{ book.title }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="button delete-button">Delete Review</button>
+            <a href="{% url 'book-entry' book.ISBN %}" class="button cancel-button">Cancel</a>
+        </div>
+    </form>
+</div>
+```
+
+Si l'usuari confirma l'eliminació mitjançant el botó "Delete Review", s'envia una petició POST que la vista processa eliminant la ressenya de la base de dades. El sistema després redirigeix l'usuari a la pàgina de detalls del llibre, utilitzant el mètode `get_success_url()`:
+
+```python
+def get_success_url(self):
+    return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
+```

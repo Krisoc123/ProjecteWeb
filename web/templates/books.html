@@ -16,9 +16,19 @@
                 <input id="id_title" type="text" name="title" placeholder="Book title..." value="{{ request.GET.title }}">
                 <select name="topic">
                     <option value="">All topics</option>
-                    <option value="Fantasia" {% if request.GET.topic == "Fantasia" %}selected{% endif %}>Fantasia</option>
-                    <option value="Novel·la" {% if request.GET.topic == "Novel·la" %}selected{% endif %}>Novel·la</option>
-                    <option value="Distopia" {% if request.GET.topic == "Distopia" %}selected{% endif %}>Distopia</option>
+                    <option value="Fiction" {% if request.GET.topic == "Fiction" %}selected{% endif %}>Fiction</option>
+                    <option value="Fantasy" {% if request.GET.topic == "Fantasy" %}selected{% endif %}>Fantasy</option>
+                    <option value="Science Fiction" {% if request.GET.topic == "Science Fiction" %}selected{% endif %}>Science Fiction</option>
+                    <option value="Mystery" {% if request.GET.topic == "Mystery" %}selected{% endif %}>Mystery</option>
+                    <option value="Romance" {% if request.GET.topic == "Romance" %}selected{% endif %}>Romance</option>
+                    <option value="Biography" {% if request.GET.topic == "Biography" %}selected{% endif %}>Biography</option>
+                    <option value="History" {% if request.GET.topic == "History" %}selected{% endif %}>History</option>
+                    <option value="Children" {% if request.GET.topic == "Children" %}selected{% endif %}>Children</option>
+                    <option value="Business" {% if request.GET.topic == "Business" %}selected{% endif %}>Business</option>
+                    <option value="Art" {% if request.GET.topic == "Art" %}selected{% endif %}>Art</option>
+                    <option value="Computers" {% if request.GET.topic == "Computers" %}selected{% endif %}>Computers</option>
+                    <option value="Cooking" {% if request.GET.topic == "Cooking" %}selected{% endif %}>Cooking</option>
+                    <option value="Health" {% if request.GET.topic == "Health" %}selected{% endif %}>Health</option>
                 </select>
             </div>
             <button type="submit" class="search-button">Search</button>

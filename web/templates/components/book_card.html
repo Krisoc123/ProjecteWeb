@@ -8,30 +8,6 @@
              onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
     </div>
     
-    <!-- 2nd option: Google Books -->
-    <script>
-    function fetchGoogleBooksCover(imgElement, isbn) {
-        // Primero consultar la API para obtener el ID
-        fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.items && data.items.length > 0) {
-                    // Obtener el ID del primer resultado
-                    const bookId = data.items[0].id;
-                    // Cambiar la URL de la imagen con el ID correcto
-                    imgElement.src = `https://books.google.com/books/content?id=${bookId}&printsec=frontcover&img=1&zoom=2`;
-                } else {
-                    // No hay resultados, usar imagen predeterminada
-                    imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching Google Books data:', error);
-                imgElement.src = 'https://s.gr-assets.com/assets/nophoto/book/111x148-bcc042a9c91a29c1d680899eff700a03.png';
-            });
-    }
-    </script>
-
     <a href="/books/entry/{{ book.ISBN }}/"><h3>{{ book.title }}</h3></a>
     <p class="author">by {{ book.author }}</p>
     {% if book.co_authors.exists %}
