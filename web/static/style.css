@@ -849,3 +849,279 @@ footer {
         margin-right: 1rem;
     }
 }
+/* Contenedor principal */
+.profile-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-top: 2rem;
+}
+
+/* Sección izquierda: imagen + info personal */
+.profile-left-section {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  background-color: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Imagen de perfil */
+.profile-picture-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #ccc;
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-picture-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #666;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: white;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Info personal */
+.profile-name {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.profile-info {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.profile-info p {
+  margin: 0.5rem 0;
+}
+
+.profile-info a {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.profile-info a:hover {
+  text-decoration: underline;
+}
+
+/* Sección derecha: libros, intercambios, etc. */
+.profile-right-section {
+  flex: 2;
+  min-width: 300px;
+}
+
+.profile-right-section section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-left: 4px solid #007bff;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.profile-right-section h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.profile-right-section ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.profile-right-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .profile-content {
+    flex-direction: column;
+  }
+
+  .profile-left-section,
+  .profile-right-section {
+    max-width: 100%;
+  }
+
+  .profile-picture-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* Modificación para mostrar libros en una línea horizontal con scroll */
+.book-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 1.5rem;
+  padding: 1rem 0.5rem;
+  scroll-snap-type: x mandatory;
+  /* Mejora para el scroll horizontal */
+  scrollbar-width: thin;
+  scrollbar-color: #007bff #f0f0f0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Estilo para cada tarjeta de libro */
+.book-card {
+  flex: 0 0 auto;
+  width: 150px !important;
+  text-align: center;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+/* Imagen de la portada del libro */
+.book-thumbnail {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.book-thumbnail:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.book-thumbnail.placeholder {
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* Información del libro */
+.book-title {
+  font-weight: bold;
+  margin-top: 0.25rem;
+  display: block;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 0.25rem;
+}
+
+.book-author {
+  font-size: 0.85rem;
+  color: #666;
+  display: block;
+  margin-top: 0.25rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Estilo para mensajes cuando no hay elementos */
+.empty-message {
+  padding: 1rem;
+  color: #777;
+  font-style: italic;
+  width: 100%;
+  text-align: center;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .profile-content {
+    flex-direction: column;
+  }
+
+  .profile-left-section,
+  .profile-right-section {
+    max-width: 100%;
+  }
+
+  .profile-picture-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .book-card {
+    width: 130px !important;
+  }
+
+  .book-thumbnail {
+    height: 180px;
+  }
+}
+
+/* Estilo para el botón de "eliminar libro " */
+
+.delete-book-icon {
+    margin-top: 0.25rem;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+.delete-book-icon:hover {
+    color: #ff4d4d;
+}
+
+
+/* Mensaje de confirmación de eliminación */
+.delete-confirmation {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.delete-confirmation.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+

@@ -1,7 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction
+
+
+from django.views.decorators.http import require_POST
+
+
 from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
@@ -115,6 +120,26 @@ def profile_view(request):
     }
     
     return render(request, 'profile.html', context)
+
+@require_POST
+@login_required
+def delete_book_from_list(request):
+    isbn = request.POST.get('isbn')
+    list_type = request.POST.get('list_type')
+    custom_user = User.objects.get(auth_user=request.user)
+
+    if list_type == 'have':
+        item = get_object_or_404(Have, user=custom_user, book__ISBN=isbn)
+    elif list_type == 'want':
+        item = get_object_or_404(Want, user=custom_user, book__ISBN=isbn)
+    else:
+        messages.error(request, "Tipo de lista no válido.")
+        return redirect('profile')
+
+    item.delete()
+    messages.success(request, "Libro eliminado correctamente.")
+    return redirect('profile')
+
 
 @login_required
 def editar_perfil(request):
@@ -361,6 +386,8 @@ def wishlist_view(request):
 
 def havelist_view(request):
     return render(request, 'havelist.html')
+
+
 
 # Vista para crear una review
 class ReviewCreateView(LoginRequiredMixin, CreateView):

@@ -14,6 +14,7 @@ urlpatterns = [
     path('books/', views.books, name='books'),
     path('profile/', views.profile_view, name='profile'),
     path('edit_profile/', views.editar_perfil, name='edit_profile'),
+    path('eliminar-libro/', views.delete_book_from_list, name='delete_book_from_list'),
     path('add-to-wishlist/', views.CreateWantView.as_view(), name='add_to_wishlist'),
     path('add-to-havelist/', views.CreateHaveView.as_view(), name='add_to_havelist'),
     path('trending/', views.trending_view, name='trending'),

@@ -6,9 +6,11 @@
 
 <!-- Info básica -->
 
-<div class="profile-content">
+<!-- Info básica -->
+<div class="profile-content" style="display: flex; gap: 2rem; align-items: flex-start;">
+
   <!-- Sección izquierda -->
-  <div class="profile-left-section">
+  <div class="profile-left-section" style="flex: 1; min-width: 250px;">
     <div class="profile-image-container">
       <form method="post" enctype="multipart/form-data" id="profile-picture-form">
         {% csrf_token %}
@@ -33,73 +35,109 @@
     <div class="profile-info">
       <p><strong>Nombre de usuario:</strong> {{ user.username }}</p>
       <p><strong>Correo:</strong> {{ user.email }}</p>
-      <a href="{% url 'edit_profile' %}">Editar perfil</a>
     </div>
   </div>
 
-    <hr>
- <!-- Sección derecha -->
-  <div class="profile-right-section">
-    <section>
-      <h2>Libros que tienes</h2>
-      <ul>
-        {% for item in have_list %}
-          <li>{{ item.book.title }} por {{ item.book.author }}</li>
-        {% empty %}
-          <li>No has añadido libros que tienes.</li>
-        {% endfor %}
-      </ul>
-    </section>
+  <!-- Sección derecha -->
+<div class="profile-right-section">
+  <section>
+    <h2>Libros que tienes</h2>
+    <!-- Contenedor principal de scroll horizontal -->
+    <div class="book-scroll-container">
+      {% for item in have_list %}
+        <!-- Cada libro es una tarjeta individual -->
+        <div class="book-card">
+          <img
+            src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
+            alt="Portada de {{ item.book.title }}"
+            onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            class="book-thumbnail"
+          >
+          <p class="book-title">{{ item.book.title }}</p>
+          <p class="book-author">{{ item.book.author }}</p>
+          <form method="post" action="{% url 'delete_book_from_list' %}" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="isbn" value="{{ item.book.ISBN }}">
+              <input type="hidden" name="list_type" value="have">
+              <button type="submit" class="delete-book-icon" title="Eliminar libro" style="background: none; border: none; cursor: pointer;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+          </form>
 
-    <section>
-      <h2>Libros que deseas</h2>
-      <ul>
-        {% for item in want_list %}
-          <li>{{ item.book.title }} por {{ item.book.author }}</li>
-        {% empty %}
-          <li>No has añadido libros que deseas.</li>
-        {% endfor %}
-      </ul>
-    </section>
+        </div>
+      {% empty %}
+        <div class="empty-message">No has añadido libros que tienes.</div>
+      {% endfor %}
+    </div>
+  </section>
 
-    <section>
-      <h2>Intercambios</h2>
-      <ul>
-        {% for exchange in exchanges_list %}
-          <li>Intercambio con {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Libro ofrecido: {{ exchange.book.title }}</li>
-        {% empty %}
-          <li>No has realizado intercambios.</li>
-        {% endfor %}
-      </ul>
-    </section>
+  <section>
+    <h2>Libros que deseas</h2>
+    <!-- También aplicamos el mismo formato para los libros deseados -->
+    <div class="book-scroll-container">
+      {% for item in want_list %}
+        <div class="book-card">
+          <img
+            src="https://covers.openlibrary.org/b/isbn/{{ item.book.ISBN }}-M.jpg"
+            alt="Portada de {{ item.book.title }}"
+            onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            onerror="fetchGoogleBooksCover(this, '{{ item.book.ISBN }}');"
+            class="book-thumbnail"
+          >
+          <p class="book-title">{{ item.book.title }}</p>
+          <p class="book-author">{{ item.book.author }}</p>
+          <div class="delete-book-icon">
+              <i class="fas fa-trash-alt" title="Eliminar libro"></i>
+            </div>
+        </div>
+      {% empty %}
+        <div class="empty-message">No has añadido libros que deseas.</div>
+      {% endfor %}
+    </div>
+  </section>
 
-    <section>
-      <h2>Ventas y donaciones</h2>
-      <ul>
-        {% for sale in sales_list %}
-          <li>{{ sale.book.title }} – {{ sale.get_type_display }} – {{ sale.price }} €</li>
-        {% empty %}
-          <li>No has vendido ni donado libros.</li>
-        {% endfor %}
-      </ul>
-    </section>
+  <section>
+    <h2>Intercambios</h2>
+    <ul>
+      {% for exchange in exchanges_list %}
+        <li>Intercambio con {{ exchange.user2.get_full_name|default:exchange.user2.username }} – Libro ofrecido: {{ exchange.book.title }}</li>
+      {% empty %}
+        <li>No has realizado intercambios.</li>
+      {% endfor %}
+    </ul>
+  </section>
 
-    <section>
-      <h2>Reseñas recibidas</h2>
-      <ul>
-        {% for review in reviews_list %}
-          <li>
-            <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>: "{{ review.comment }}"<br>
-            Calificación: {{ review.rating }}/5
-          </li>
-        {% empty %}
-          <li>No has recibido reseñas aún.</li>
-        {% endfor %}
-      </ul>
-    </section>
-  </div>
+  <section>
+    <h2>Ventas y donaciones</h2>
+    <ul>
+      {% for sale in sales_list %}
+        <li>{{ sale.book.title }} – {{ sale.get_type_display }} – {{ sale.price }} €</li>
+      {% empty %}
+        <li>No has vendido ni donado libros.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Reseñas recibidas</h2>
+    <ul>
+      {% for review in reviews_list %}
+        <li>
+          <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>: "{{ review.comment }}"<br>
+          Calificación: {{ review.rating }}/5
+        </li>
+      {% empty %}
+        <li>No has recibido reseñas aún.</li>
+      {% endfor %}
+    </ul>
+  </section>
 </div>
 
+<!-- Añadimos un mensaje de confirmación que se mostrará cuando se elimine un libro -->
+<div id="delete-confirmation" class="delete-confirmation">
+  <span class="message">Libro eliminado correctamente</span>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -117,5 +155,25 @@
             }
         });
     });
+
+    function fetchGoogleBooksCover(imgElement, isbn) {
+        const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.items && data.items.length > 0) {
+                const thumbnail = data.items[0].volumeInfo.imageLinks?.thumbnail;
+                if (thumbnail) {
+                    imgElement.src = thumbnail;
+                }
+            }
+        })
+        .catch(error => {
+        console.error("Error fetching Google Books cover:", error);
+        });
+    }
+
 </script>
+
+
 {% endblock %}
