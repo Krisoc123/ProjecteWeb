@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-icon">✓</div>
+    <h1>Successfully got the book!</h1>
+    
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>We have successfully sent your book purchase proposal. </p>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'profile' %}" class="button">View My Purchases</a>
+        <a href="{% url 'books' %}" class="button">Browse More Books</a>
+    </div>
+</div>
+
+<style>
+    .success-container {
+        max-width: 600px;
+        margin: 50px auto;
+        text-align: center;
+        padding: 30px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .success-icon {
+        font-size: 5em;
+        color: #4CAF50;
+        margin-bottom: 20px;
+    }
+    
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+    
+    .message {
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        background-color: #dff0d8;
+        border: 1px solid #d6e9c6;
+        color: #3c763d;
+    }
+    
+    .message.error {
+        background-color: #f2dede;
+        border: 1px solid #ebccd1;
+        color: #a94442;
+    }
+    
+    .actions {
+        margin-top: 30px;
+    }
+    
+    .button {
+        display: inline-block;
+        padding: 12px 20px;
+        margin: 0 10px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+    
+    .button:hover {
+        background-color: #45a049;
+    }
+</style>
+{% endblock %}

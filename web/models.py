@@ -20,7 +20,7 @@ def save_user_profile(sender, instance, **kwargs):
 class User(models.Model):
     userId = models.AutoField(primary_key=True)
     auth_user = models.OneToOneField(AuthUser, on_delete=models.CASCADE, related_name='custom_user', null=True)
-    points = models.IntegerField(default=0)
+    points = models.IntegerField(default=50)
     location = models.CharField(max_length=255, default="not specified")
     name = models.CharField(max_length=255, default="Anonymous")
     email = models.EmailField(unique=True)
@@ -80,7 +80,8 @@ class SaleDonation(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sales_made", null=True)
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="purchases_made", null=True)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     points = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True)
@@ -88,8 +89,9 @@ class SaleDonation(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
-        return f"{self.user.name} sells/donates {self.book.ISBN} for {self.points} points (Status: {self.status})"
-
+        return f"{self.user1.name} sells/donates {self.book.ISBN} to {self.user2.name} for {self.points} points (Status: {self.status})"
+    
+    
 class Exchange(models.Model):
     STATUS_CHOICES = [
         ('proposed', 'Proposed'),

@@ -103,7 +103,7 @@
     <h2>Exchanges</h2>
     <ul>
       {% for exchange in exchanges_list %}
-        <li>Exchange with {{ exchange.user2.name }} – Your book: {{ exchange.book1.title }} for {{ exchange.book2.title }}</li>
+        <li>Exchange with {{ exchange.user2.name }} - Your book: {{ exchange.book1.title }} for {{ exchange.book2.title }}</li>
       {% empty %}
         <li>You haven't made any exchanges.</li>
       {% endfor %}
@@ -114,9 +114,20 @@
     <h2>Sales and Donations</h2>
     <ul>
       {% for sale in sales_list %}
-        <li>{{ sale.book.title }} – {{ sale.points }} points – Status: {{ sale.status }}</li>
+        <li>{{ sale.book.title }} - {{ sale.points }} points - Status: {{ sale.status }}</li>
       {% empty %}
         <li>You haven't sold or donated any books.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Purchases</h2>
+    <ul>
+      {% for purchase in purchases_list %}
+        <li>{{ purchase.book.title }} - {{ purchase.points }} points</li>
+      {% empty %}
+        <li>You haven't purchased any books.</li>
       {% endfor %}
     </ul>
   </section>

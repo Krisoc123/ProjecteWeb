@@ -7,64 +7,53 @@
 {% block content %}
 <div class="buy-form-container">
 <div class="book-cover-entry">
-    <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
+    <img src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
          alt="Cover of {{ mybook.title }}"
-         onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
-         onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
+         onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
+         onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
 </div>
 <div class="book-info">
-    <h1>Get {{ mybook.title }}</h1>
-    <p>Author: {{ mybook.author }}</p>
-    <p>Topic: {{ mybook.topic }}</p>
-    <p>ISBN: {{ mybook.ISBN }}</p>
+    <h1>Get {{ book.title }}</h1>
+    <p>Author: {{ book.author }}</p>
+    <p>Topic: {{ book.topic }}</p>
+    <p>ISBN: {{ book.ISBN }}</p>
 </div>
 
     <h2>Available Donations/Sales</h2>
 
-    <section class="sale-donation-options">
-        {% if sale_donations %}
-            <table class="user-list">
-                <thead>
-                    <tr>
-                        <th>Owner</th>
-                        <th>Points</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for offer in sale_donations %}
-                        <tr>
-                            <td>{{ offer.user.username }}</td>
-                            <td>{{ offer.points }}</td>
-                            <td>{{ offer.location }}</td>
-                            <td>{{ offer.status }}</td>
-                            <td>
-                                {% if offer.status == 'pending' %}
-                                    <form method="POST" action="{% url 'get_book' offer.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="buy-button">Request</button>
-                                    </form>
-                                {% else %}
-                                    <em>Not available</em>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>No current offers for this book.</p>
+    
+    <form method="post" class="exchange-form">
+        {% csrf_token %}
+        
+        {% if not selected_user_id %}
+            <!-- Step 1: Select a user to exchange with -->
+            <h2>Select a user to buy book from:</h2>
+            <ul class="user-list">
+                {% for user in users %}
+                <li>
+                    <label>
+                        <input type="radio" name="selected_user" value="{{ user.userId }}">
+                        {{ user.name }} ({{ user.location }})
+                    </label>
+                </li>
+                {% empty %}
+                <li>No users available to exchange this book.</li>
+                {% endfor %}
+            </ul>
+            <button type="submit" class="submit-button">Confirm purchase</button>
+        
+
         {% endif %}
-    </section>
+    </form>
 
     <section class="user-balance">
         <h3>Your Token Balance</h3>
         <p>You currently have: <strong>{{ user_tokens }}</strong> Tokens</p>
     </section>
+
 </div>
-</div>
+
+{% endblock %}
 
 <style>
     .buy-form-container {
@@ -109,4 +98,3 @@
         background-color: #45a049;
     }
 </style>
-{% endblock %}

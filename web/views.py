@@ -103,8 +103,9 @@ def profile_view(request):
     # Now use custom_user for your queries
     have_list = Have.objects.filter(user=custom_user)
     want_list = Want.objects.filter(user=custom_user)
-    exchanges_list = Exchange.objects.filter(user1=custom_user)
-    sales_list = SaleDonation.objects.filter(user=custom_user)
+    exchanges_list = Exchange.objects.filter(user1=custom_user).union(Exchange.objects.filter(user2=custom_user))
+    sales_list = SaleDonation.objects.filter(user1=custom_user)
+    purchases_list = SaleDonation.objects.filter(user2=custom_user)
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {
@@ -113,6 +114,7 @@ def profile_view(request):
         'want_list': want_list,
         'exchanges_list': exchanges_list,
         'sales_list': sales_list,
+        'purchases_list': purchases_list,
         'reviews_list': reviews_list,
     }
     
@@ -452,15 +454,89 @@ def book_trade_view(request):
     })
 
 def sale_detail(request, ISBN):
-    mybook = get_object_or_404(Book, ISBN=ISBN)
-    sale_donations = SaleDonation.objects.filter(book=mybook)
-    user_tokens = User.objects.first().points
-
+    try:
+        book = Book.objects.get(ISBN=ISBN)
+    except Book.DoesNotExist:
+        messages.error(request, f"Book with ISBN {ISBN} not found.")
+        return redirect('book-trade')
+    
+    if hasattr(request.user, 'custom_user'):
+        current_user = request.user.custom_user
+    else:
+        current_user, created = User.objects.get_or_create(
+            auth_user=request.user,
+            defaults={
+                'name': request.user.username,
+                'email': request.user.email
+            }
+        )
+    
+    have_objects = Have.objects.filter(book=book).exclude(user=current_user).select_related('user')
+    
+    unique_users = {}
+    for have in have_objects:
+        if have.user.userId not in unique_users:
+            unique_users[have.user.userId] = have.user
+    
+    users = list(unique_users.values())
+    
     context = {
-        'mybook': mybook,
-        'sale_donations': sale_donations,
-        'user_tokens': user_tokens,
+        'users': users,
+        'book': book,
+        'selected_user_id': None,
+        'user_books': [],
+        'user_tokens': current_user.points
     }
+    
+    if request.method == 'POST':
+        selected_user_id = request.POST.get('selected_user')
+
+        
+        if selected_user_id:
+            
+            selected_user = get_object_or_404(User, userId=selected_user_id)
+                            
+            context['selected_user_id'] = selected_user_id
+            context['selected_user'] = selected_user
+            
+            # Discount points from buyer
+            buyer = current_user
+            if buyer.points >= book.base_price:
+                buyer.points -= book.base_price
+                buyer.save()
+
+                # Transfer points to the offering user
+                if selected_user != buyer:
+                    selected_user.points += book.base_price
+                    selected_user.save()
+                
+                # Seller (selected_user) gets the points, doesn't have book anymore
+
+                Have.objects.filter(user=selected_user, book=book).delete()
+
+                # Create a SaleDonation object
+                sale = SaleDonation(
+                    user1=selected_user,
+                    user2=buyer,
+                    book=book,
+                    points=book.base_price,
+                    status='pending'
+                )
+                sale.save()
+
+                messages.success(request, "Has adquirit el llibre correctament.")
+                return render(request, 'sale_success.html', context)
+            else:
+                messages.error(request, "No tens prou punts per adquirir aquest llibre.")
+                return redirect('book-entry', ISBN=ISBN)
+        
+           
+        else:
+            messages.error(request, "No s'ha seleccionat cap usuari.")
+            
+            
+    
+    
     return render(request, 'buy_form.html', context)
 
 
