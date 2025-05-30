@@ -25,8 +25,7 @@ urlpatterns = [
     path('trade/', views.book_trade_view, name='book-trade'),
     path('books/<ISBN>/buy/', views.sale_detail, name='sale_detail'),
     path('trade/success/', views.trade_success, name='trade_success_page'),
-    path('trade/<str:book_id>/', views.trade_form, name='trade_form'),
-
+    path('trade/<str:book_id>/', views.trade_form, name='trade_form')
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

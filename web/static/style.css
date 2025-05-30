@@ -12,8 +12,31 @@ body {
     background-color: #f5f5f5;
 }
 
+/* Buttons */
+.button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+    text-align: center;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    line-height: 1.2;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #2980b9;
+}
+
 /* Button Styles - Consolidated */
-.button,
 .action-button,
 .review-button,
 .add-to-database-button,
@@ -32,7 +55,6 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.button:hover,
 .action-button:hover,
 .review-button:hover,
 .add-to-database-button:hover,
@@ -42,7 +64,6 @@ body {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
-.button:active,
 .action-button:active,
 .review-button:active,
 .add-to-database-button:active,
@@ -184,7 +205,7 @@ main {
     display: block;
     margin-bottom: 0.5rem;
     color: #2c3e50;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.95rem;
 }
 
@@ -506,6 +527,48 @@ footer {
     color: #333;
 }
 
+.trending-books .book-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 350px;
+    height: auto;
+    flex-direction: column;
+    margin: 0;
+    padding: 15px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
+    vertical-align: top;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.trending-books .book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Override for trending books layout */
+.trending-books .books-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 20px;
+    margin: 20px auto 0;
+    padding: 0;
+    width: 100%;
+}
+
+.trending-books .book-card {
+    margin: 0;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .trending-books .books-container {
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    }
+}
+
 /* Book Detail Page */
 .book-entry-container {
     display: grid;
@@ -520,7 +583,7 @@ footer {
 }
 
 .book-info {
-    padding: 20px; /* Fixed excessively large padding (was 500px) */
+    padding: 20px; 
 }
 
 .book-info h1 {
@@ -543,10 +606,27 @@ footer {
 
 .buttons-container {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 15px;
-    margin-top: 30px;
+    margin: 30px auto;
     justify-content: center;
+    max-width: 1000px;
+}
+
+.buttons-container .button {
+    flex: 1 1 auto;
+    min-width: 150px;
+    text-align: center;
+    white-space: nowrap;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px; /* Alçada fixa per a tots els botons */
+    padding: 0 15px; /* Padding horitzontal uniforme */
+    line-height: 1.2; /* Línia específica per al text */
+    box-sizing: border-box; /* Assegurar que el padding no afecti la mida total */
 }
 
 /* External Book Notice */
@@ -666,6 +746,57 @@ footer {
     padding: 1.5rem;
     background-color: #f5f5f5;
     border-radius: 6px;
+}
+
+/* Star Rating Styles */
+.star {
+    font-size: 1.5rem;
+    margin-right: 2px;
+}
+
+.star.filled {
+    color: #ffc107;
+}
+
+.star.empty {
+    color: #e0e0e0;
+}
+
+.average-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.avg-rating-text {
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.review-rating {
+    margin-bottom: 10px;
+}
+
+/* Review Form Star Rating */
+.star-rating {
+    display: flex;
+    padding: 0;
+    margin: 0;
+}
+
+.star-rating li {
+    display: inline-block;
+    margin-right: 15px;
+}
+
+.star-rating input[type="radio"] {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.star-rating-container {
+    margin-bottom: 1rem;
 }
 
 /* Form Containers */
@@ -1283,4 +1414,127 @@ footer {
         padding: 20px;
         border-radius: 8px;
     }
+
+/* Trending Books Page Styles */
+.trending-books {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.trending-books h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+}
+
+.trending-books .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 16px;
+}
+
+/* This specific class overrides the general books-container */
+.trending-books .books-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0; /* Remove padding */
+}
+
+.popularity {
+    font-size: 0.8rem;
+    color: #3498db;
+    display: block;
+    text-align: right;
+}
+
+.no-books-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    color: #666;
+    font-style: italic;
+}
+
+.exchange-button {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    background-color: #3498db;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    text-decoration: none;
+}
+
+.exchange-button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+.exchange-button svg {
+    width: 23px !important;
+    height: 23px !important;
+    stroke: #ffffff;
+    stroke-width: 2;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    z-index: 11;
+    pointer-events: none;
+}
+
+.category {
+    display: inline-block;
+    background-color: #e1f5fe;
+    color: #0288d1;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+/* Responsive adjustments for trending page */
+@media (max-width: 768px) {
+    .trending-books .books-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .trending-books .book-card {
+        min-height: 320px;
+    }
+}
+
+@media (max-width: 480px) {
+    .trending-books .books-container {
+        grid-template-columns: 1fr;
+    }
     
+    .trending-books h2 {
+        font-size: 24px;
+    }
+    
+    .trending-books .subtitle {
+        font-size: 14px;
+    }
+
+    .trending-books .book-card {
+        min-height: 300px;
+        max-width: 280px;
+        margin: 0 auto;
+    }
+}

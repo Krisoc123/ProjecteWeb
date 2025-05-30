@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.db import transaction
 from django.contrib.auth.models import User as AuthUser
-from .models import User as CustomUser, Want, Book, Have
+from .models import User as CustomUser, Want, Book, Have, Review
 from .models import User
 
 class CustomUserCreationForm(UserCreationForm):
@@ -87,3 +87,19 @@ class HaveForm(forms.ModelForm):
     title = forms.CharField(widget=forms.HiddenInput(), required=False)
     author = forms.CharField(widget=forms.HiddenInput(), required=False)
     topic = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['text', 'rating']
+        widgets = {
+            'text': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Write your review here...'}),
+            'rating': forms.RadioSelect(attrs={'class': 'star-rating'}),
+        }
+        labels = {
+            'text': 'Your Review',
+            'rating': 'Rating'
+        }
+        help_texts = {
+            'rating': 'Rate this book from 1 to 5 stars'
+        }

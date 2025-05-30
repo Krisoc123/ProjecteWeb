@@ -1,92 +1,160 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
+{% load book_filters %}
 
 {% block title %}Books - Library{% endblock %}
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
 
-</head>
-<body>
-    {% block content %}
-
-        <div class="book-entry-container">
-            <div class="book-info">
-                <h1>{{ mybook.title}}</h1>
-                    <p> {{mybook.author }}</p>
-                <h2>{{mybook.topic}}</h2>
-                <p class="description">{{ mybook.description }}</p>
-            </div>
-            <div class="book-cover-entry">
-                <!-- Primera opción: Open Library -->
-                <img src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
-                     alt="Cover of {{ mybook.title }}"
-                     onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
-                     onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
-            </div>
-            <!-- 2nd option: Google Books - Script cargado desde archivo externo -->
-
-        </div>
-        <div class="buttons-container">
-            <a href="{% url 'add_to_havelist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Havelist </a>
-            <a href="{% url 'add_to_wishlist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Wishlist </a>
-            <a href="{% url 'trade_form' mybook.ISBN %}" class="button"> Find Book Trade </a>
-            {% if is_local %}
-            <a href="{% url 'sale_detail' mybook.ISBN %}" class="button"> Buy this book </a>
-            {% endif %}
-        </div>
-
-        <!-- Sección de Reviews -->
-        {% if is_local %}
-        <div class="reviews-section">
-            <h2>Reviews</h2>
-
-            <!-- Botón para añadir review -->
-            {% if user.is_authenticated %}
-                <div class="add-review">
-                    <a href="{% url 'review-create' mybook.ISBN %}" class="button review-button">Write a Review</a>
-                </div>
-            {% endif %}
-
-            <!-- Lista de reviews -->
-            {% if reviews %}
-                <div class="reviews-list">
-                    {% for review in reviews %}
-                        <div class="review-card">
-                            <div class="review-header">
-                                <span class="review-author">{{ review.user.name }}</span>
-                                <span class="review-date">{{ review.date|date:"F d, Y" }}</span>
-
-                                <!-- Opciones de edición para el autor de la review -->
-                                {% if user.is_authenticated and user.id == review.user.auth_user.id %}
-                                    <div class="review-actions">
-                                        <a href="{% url 'review-update' review.pk %}" class="review-edit">Edit</a>
-                                        <a href="{% url 'review-delete' review.pk %}" class="review-delete">Delete</a>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="review-content">
-                                <p>{{ review.text }}</p>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="no-reviews">No reviews yet. Be the first to review this book!</p>
-            {% endif %}
-        </div>
-        {% else %}
-        <div class="reviews-section external-book-notice">
-            <p class="notice">
-                This book is from an external source and is not yet in our database.
-                Reviews are only available for books in our local database.
-            </p>
-            {% if user.is_authenticated and user.is_staff %}
-                <a href="#" class="button add-to-database-button">Add this book to our database</a>
-            {% endif %}
+{% block content %}
+<div class="book-entry-container" vocab="http://schema.org/" typeof="Product">
+    <link property="additionalType" href="http://schema.org/Book" />
+    <div class="book-info">
+        <h1 property="name">{{ mybook.title }}</h1>
+        <p property="author" typeof="Person"><span property="name">{{ mybook.author }}</span></p>
+        <h2><span property="genre">{{ mybook.topic }}</span></h2>
+        {% if mybook.description %}
+        <p class="description" property="description">{{ mybook.description }}</p>
+        {% endif %}
+        <meta property="isbn" content="{{ mybook.ISBN }}">
+        <meta property="productID" content="isbn:{{ mybook.ISBN }}">
+        {% if mybook.publish_date %}
+        <meta property="datePublished" content="{{ mybook.publish_date|date:'Y-m-d' }}">
+        {% endif %}
+        {% if avg_rating %}
+        <div property="aggregateRating" typeof="AggregateRating">
+            <meta property="ratingValue" content="{{ avg_rating }}">
+            <meta property="reviewCount" content="{% if reviews %}{{ reviews|length }}{% else %}0{% endif %}">
+            <meta property="bestRating" content="5">
+            <meta property="worstRating" content="1">
         </div>
         {% endif %}
+        {% if transaction_count > 0 %}
+        <!-- Additional metadata for popularity -->
+        <div property="additionalProperty" typeof="PropertyValue">
+            <meta property="name" content="transactionCount">
+            <meta property="value" content="{{ transaction_count }}">
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="book-cover-entry">
+        <!-- Primera opción: Open Library -->
+        <img property="image" src="https://covers.openlibrary.org/b/isbn/{{ mybook.ISBN }}-L.jpg"
+             alt="Cover of {{ mybook.title }}"
+             onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');"
+             onerror="fetchGoogleBooksCover(this, '{{ mybook.ISBN }}');">
+    </div>
+</div>
 
-     {% endblock %}
-                                    </body>
-</html>
+<div class="buttons-container">
+    <a href="{% url 'add_to_havelist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Havelist </a>
+    <a href="{% url 'add_to_wishlist' %}?isbn={{ mybook.ISBN }}&title={{ mybook.title|urlencode }}&author={{ mybook.author|urlencode }}" class="button"> Add to my Wishlist </a>
+    <a href="{% url 'trade_form' mybook.ISBN %}" class="button"> Find Book Trade </a>
+    {% if is_local %}
+    <div property="offers" typeof="Offer">
+        <meta property="availability" content="{{ book_availability }}">
+        <meta property="price" content="{{ mybook.base_price }}">
+        <meta property="priceCurrency" content="POINTS">
+        <meta property="itemCondition" content="{{ book_condition|get_condition_schema }}">
+        <meta property="priceValidUntil" content="{% now 'Y-m-d'|add_years:1 %}">
+        <meta property="inventoryLevel" content="{{ available_copies }}">
+        
+        {% if book_sellers %}
+        <div property="seller" typeof="Person">
+            <meta property="name" content="{{ book_sellers.0.user.name }}">
+            <meta property="email" content="{{ book_sellers.0.user.email }}">
+            <meta property="address" content="{{ book_sellers.0.user.location }}">
+        </div>
+        {% endif %}
+        
+        {% if available_copies > 0 %}
+        <div property="additionalProperty" typeof="PropertyValue">
+            <meta property="name" content="exchangeAvailable">
+            <meta property="value" content="true">
+            <meta property="description" content="Book exchange options available">
+        </div>
+        {% endif %}
+    </div>
+    
+    <a href="{% url 'sale_detail' mybook.ISBN %}" class="button">
+        Buy this book ({{ mybook.base_price }} Points)
+    </a>
+    {% endif %}
+</div>
+
+<!-- Sección de Reviews -->
+{% if is_local %}
+    <div class="reviews-section">
+    <h2>Reviews</h2>
+    
+    {% if avg_rating %}
+    <div class="average-rating">
+        <div class="stars">
+            {% for i in "12345" %}
+                {% if forloop.counter <= avg_rating|floatformat:"0" %}
+                    <span class="star filled">★</span>
+                {% else %}
+                    <span class="star empty">☆</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <span class="avg-rating-text">{{ avg_rating|floatformat:1 }} average rating from {{ reviews|length }} review{{ reviews|length|pluralize }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Botón para añadir review -->
+    {% if user.is_authenticated %}
+        <div class="add-review">
+            <a href="{% url 'review-create' mybook.ISBN %}" class="button review-button">Write a Review</a>
+        </div>
+    {% endif %}
+
+    <!-- Lista de reviews -->
+    {% if reviews %}
+        <div class="reviews-list">
+            {% for review in reviews %}
+                <div class="review-card" property="review" typeof="Review">
+                    <div class="review-header">
+                        <span class="review-author" property="author" typeof="Person"><span property="name">{{ review.user.name }}</span></span>
+                        <span class="review-date" property="datePublished" content="{{ review.date|date:'Y-m-d' }}">{{ review.date|date:"F d, Y" }}</span>
+
+                        <!-- Opciones de edición para el autor de la review -->
+                        {% if user.is_authenticated and user.id == review.user.auth_user.id %}
+                            <div class="review-actions">
+                                <a href="{% url 'review-update' review.pk %}" class="review-edit">Edit</a>
+                                <a href="{% url 'review-delete' review.pk %}" class="review-delete">Delete</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="review-rating" property="reviewRating" typeof="Rating">
+                        <meta property="ratingValue" content="{{ review.rating }}">
+                        <meta property="bestRating" content="5">
+                        <meta property="worstRating" content="1">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                <span class="star filled">★</span>
+                            {% else %}
+                                <span class="star empty">☆</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="review-content">
+                        <p property="reviewBody">{{ review.text }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-reviews">No reviews yet. Be the first to review this book!</p>
+    {% endif %}
+</div>
+{% else %}
+<div class="reviews-section external-book-notice">
+    <p class="notice">
+        This book is from an external source and is not yet in our database.
+        Reviews are only available for books in our local database.
+    </p>
+    {% if user.is_authenticated and user.is_staff %}
+        <a href="#" class="button add-to-database-button">Add this book to our database</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

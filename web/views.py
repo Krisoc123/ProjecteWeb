@@ -2,12 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout as auth_logout
 from django.contrib import messages
 from django.db import transaction, models
-
+from django.db.models import Avg
 
 from django.views.decorators.http import require_POST
 
 
-from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm
+from .forms import CustomUserCreationForm, LoginForm, WantForm, HaveForm, ReviewForm
 from django.contrib.auth.decorators import login_required
 from .models import User, Book, Review, Have, Want, SaleDonation, Exchange
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -31,7 +31,7 @@ def logout_view(request):
     return redirect('home')
 
 def register_view(request):
-    # Si el usuario ya está autenticado, redirigir al inicio
+    # If user is already authenticated, redirect to home
     if request.user.is_authenticated:
         return redirect('home')
         
@@ -39,12 +39,11 @@ def register_view(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Inicia sesión automáticamente tras el registro
+            # Auto-login after registration
             login(request, user)
             messages.success(request, "Registration successful! You are now logged in.")
             return redirect('home')
         else:
-            # Si el formulario no es válido, se mostrarán los errores en la plantilla
             messages.error(request, "Please correct the errors below.")
     else:
         form = CustomUserCreationForm()
@@ -56,7 +55,7 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
         
-    # If the request is a POST means the user is trying to log in
+    # If the request is a POST, user is trying to log in
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -70,7 +69,7 @@ def login_view(request):
                 return redirect('home')
             else:
                 messages.error(request, "Invalid username or password. Please try again.")
-    # If the request is a GET, we just show the login form
+    # If the request is a GET, show the login form
     else:
         form = LoginForm()
     
@@ -109,7 +108,7 @@ def profile_view(request):
     reviews_list = Review.objects.filter(user=custom_user)
     
     context = {
-        'custom_user': custom_user,  # Canviem el nom de la variable per evitar conflicte
+        'custom_user': custom_user,
         'have_list': have_list,
         'want_list': want_list,
         'exchanges_list': exchanges_list,
@@ -147,19 +146,19 @@ def editar_perfil(request):
         form = UserProfileForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('profile')  # O como se llame tu vista de perfil
+            return redirect('profile')
     else:
         form = UserProfileForm(instance=user)
 
     return render(request, 'editar_perfil.html', {'form': form})
 
 def books(request):
-    # Obtenim els paràmetres de cerca
+    # Get search parameters from request
     author = request.GET.get('author', '')
     title = request.GET.get('title', '')
     topic = request.GET.get('topic', '')
 
-    # Filtrem els llibres locals
+    # Filter local books
     queryset = Book.objects.all()
 
     if author:
@@ -169,35 +168,29 @@ def books(request):
         queryset = queryset.filter(title__icontains=title)
 
     if topic:
-        # Usamos icontains para hacer la búsqueda más flexible
         queryset = queryset.filter(topic__icontains=topic)
 
-    # Obtenim llibres d'APIs externes si hi ha paràmetres de cerca
+    # Get external books if search parameters exist
     external_books = []
     if author or title or topic:
-        # Cerca a Google Books API
+        # Search Google Books API
         search_terms = []
         if title:
-            search_terms.append(f"intitle:{title}")  # Mejorado para búsquedas más precisas
+            search_terms.append(f"intitle:{title}")
         if author:
             search_terms.append(f"inauthor:{author}")
         if topic:
-            # Aseguramos que el tema se busca correctamente en Google Books
             search_terms.append(f"subject:{topic}")
 
         search_query = " ".join(search_terms).strip()
-        print(f"Cercant amb el terme: '{search_query}'")  # Logging
 
         if search_query:
             try:
                 api_url = f"https://www.googleapis.com/books/v1/volumes?q={search_query}&maxResults=20"
-                print(f"Cridant API: {api_url}")  # Logging
                 google_response = requests.get(api_url)
-                print(f"Codi de resposta: {google_response.status_code}")  # Logging
 
                 if google_response.status_code == 200:
                     data = google_response.json()
-                    print(f"Resultats obtinguts: {len(data.get('items', []))}")  # Logging
                     for item in data.get('items', []):
                         volume_info = item.get('volumeInfo', {})
 
@@ -207,7 +200,7 @@ def books(request):
                                 isbn = identifier.get('identifier', '')
                                 break
 
-                        # Extraemos categorías del libro si están disponibles
+                        # Extract book categories if available
                         categories = volume_info.get('categories', [])
                         book_topic = categories[0] if categories else topic if topic else "General"
 
@@ -219,10 +212,10 @@ def books(request):
                             'ISBN': isbn,
                             'external_link': volume_info.get('infoLink', ''),
                             'source': 'Google Books',
-                            'topic': book_topic  # Añadimos la categoría del libro
+                            'topic': book_topic 
                         })
             except Exception as e:
-                print(f"Error fetching from Google Books API: {e}")
+                pass  # Silently handle API errors
 
     context = {
         'books': queryset,
@@ -232,7 +225,58 @@ def books(request):
     return render(request, 'books.html', context)
 
 def trending_view(request):
-    return render(request, 'trending.html')
+    """
+    View to show the most popular books (with more exchanges and sales).
+    Counts both exchanges and sales/donations, and shows books ordered
+    by total number of transactions.
+    """
+    from django.db.models import Count, Q, F
+    from itertools import chain
+    
+    # Books involved in exchanges (either as book1 or book2)
+    # Include both 'completed' and 'accepted' exchanges
+    exchanged_books = Book.objects.annotate(
+        exchange_count=Count('book_exchanged_by', filter=Q(book_exchanged_by__status__in=['completed', 'accepted']), distinct=True) + 
+                      Count('book_received_as_exchange', filter=Q(book_received_as_exchange__status__in=['completed', 'accepted']), distinct=True)
+    ).filter(exchange_count__gt=0).order_by('-exchange_count')
+    
+    # Books involved in sales/donations
+    sold_books = Book.objects.annotate(
+        sale_count=Count('saledonation', filter=Q(saledonation__status__in=['completed', 'accepted']), distinct=True)
+    ).filter(sale_count__gt=0).order_by('-sale_count')
+    
+    # Combine both querysets and sort by total transactions
+    from itertools import chain
+    all_books = list(chain(exchanged_books, sold_books))
+    
+    # Remove duplicates and sort by total transaction count
+    unique_books = {}
+    for book in all_books:
+        if book.ISBN not in unique_books:
+            # Add counts if the book has both exchanges and sales
+            exchange_count = getattr(book, 'exchange_count', 0)
+            sale_count = getattr(book, 'sale_count', 0)
+            book.total_count = exchange_count + sale_count
+            unique_books[book.ISBN] = book
+    
+    # Sort by total count
+    trending_books = sorted(unique_books.values(), key=lambda x: x.total_count, reverse=True)
+    
+    # Limit to top 10 books
+    trending_books = trending_books[:10]
+    
+    # If no trending books found, get some books anyway
+    if not trending_books:
+        trending_books = Book.objects.annotate(
+            exchange_count=Count('book_exchanged_by', filter=Q(book_exchanged_by__status__in=['completed', 'accepted']), distinct=True) + 
+                        Count('book_received_as_exchange', filter=Q(book_received_as_exchange__status__in=['completed', 'accepted']), distinct=True)
+        ).order_by('-exchange_count')[:10]
+        
+        # Add a total_count attribute for consistency
+        for book in trending_books:
+            book.total_count = getattr(book, 'exchange_count', 0)
+    
+    return render(request, 'trending.html', {'trending_books': trending_books})
 
 class CreateWantView(LoginRequiredMixin, CreateView):
     model = Want
@@ -242,7 +286,7 @@ class CreateWantView(LoginRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        # Recollim dades del llibre dels paràmetres GET
+        # Get book data from GET parameters
         initial['isbn'] = self.request.GET.get('isbn', '')
         initial['title'] = self.request.GET.get('title', '')
         initial['author'] = self.request.GET.get('author', '')
@@ -255,33 +299,33 @@ class CreateWantView(LoginRequiredMixin, CreateView):
         author = form.cleaned_data.get('author')
         topic = form.cleaned_data.get('topic')
 
-        # Si el llibre no existeix a la nostra BD, l'afegim
+        # If book doesn't exist in our DB, add it
         try:
             book = Book.objects.get(ISBN=isbn)
         except Book.DoesNotExist:
-            # Creem un nou llibre a la base de dades
+            # Create new book in database
             book = Book(
                 ISBN=isbn,
                 title=title,
                 author=author,
                 topic=topic or "General",
-                publish_date=timezone.now().date(),  # Data actual com a predeterminada
-                base_price=10  # Preu base predeterminat
+                publish_date=timezone.now().date(),
+                base_price=10
             )
             book.save()
 
-        # Obtenim l'usuari actual i li assignem al want
+        # Get current user and assign to want
         custom_user = User.objects.get(auth_user=self.request.user)
 
-        # Comprovar si ja existeix un want per aquest usuari i llibre
+        # Check if want already exists for this user and book
         existing_want = Want.objects.filter(user=custom_user, book=book).first()
 
         if existing_want:
-            # Actualitzar la prioritat si ja existeix
+            # Update priority if already exists
             existing_want.priority = form.cleaned_data['priority']
             existing_want.save()
         else:
-            # Crear un nou want
+            # Create new want
             want = form.save(commit=False)
             want.user = custom_user
             want.book = book
@@ -291,13 +335,13 @@ class CreateWantView(LoginRequiredMixin, CreateView):
 
 class CreateHaveView(LoginRequiredMixin, CreateView):
     model = Have
-    form_class = HaveForm  # Canviat de WantForm a HaveForm
+    form_class = HaveForm
     template_name = 'have_form.html'
     success_url = reverse_lazy('books')
 
     def get_initial(self):
         initial = super().get_initial()
-        # Recollim dades del llibre dels paràmetres GET
+        # Get book data from GET parameters
         initial['isbn'] = self.request.GET.get('isbn', '')
         initial['title'] = self.request.GET.get('title', '')
         initial['author'] = self.request.GET.get('author', '')
@@ -310,33 +354,33 @@ class CreateHaveView(LoginRequiredMixin, CreateView):
         author = form.cleaned_data.get('author')
         topic = form.cleaned_data.get('topic')
 
-        # Si el llibre no existeix a la nostra BD, l'afegim
+        # If book doesn't exist in our DB, add it
         try:
             book = Book.objects.get(ISBN=isbn)
         except Book.DoesNotExist:
-            # Creem un nou llibre a la base de dades
+            # Create new book in database
             book = Book(
                 ISBN=isbn,
                 title=title,
                 author=author,
                 topic=topic or "General",
-                publish_date=timezone.now().date(),  # Data actual com a predeterminada
-                base_price=10  # Preu base predeterminat
+                publish_date=timezone.now().date(),
+                base_price=10
             )
             book.save()
 
-        # Obtenim l'usuari actual i li assignem al have
+        # Get current user and assign to have
         custom_user = User.objects.get(auth_user=self.request.user)
 
-        # Comprovar si ja existeix un have per aquest usuari i llibre
+        # Check if have already exists for this user and book
         existing_have = Have.objects.filter(user=custom_user, book=book).first()
 
         if existing_have:
-            # Actualitzar l'estat si ja existeix
+            # Update status if already exists
             existing_have.status = form.cleaned_data['status']
             existing_have.save()
         else:
-            # Crear un nou have
+            # Create new have
             have = form.save(commit=False)
             have.user = custom_user
             have.book = book
@@ -347,18 +391,16 @@ class CreateHaveView(LoginRequiredMixin, CreateView):
 
 def book_entry(request, ISBN):
     try:
-        # Primero intenta encontrar el libro en la base de datos local
+        # Fetch the book from the local database
         mybook = Book.objects.get(ISBN=ISBN)
         is_local = True
-
-        # Obtener las reviews del libro si es local
         reviews = Review.objects.filter(book=mybook).order_by('-date')
 
     except Book.DoesNotExist:
-        # Si no existe localmente, buscar en fuentes externas (Google Books)
+        # If the book is not found in the local database, try to fetch it from an external API
         mybook = None
         is_local = False
-        reviews = []  # No hay reviews para libros externos
+        reviews = []
 
         try:
             api_url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{ISBN}"
@@ -367,11 +409,11 @@ def book_entry(request, ISBN):
             if response.status_code == 200:
                 data = response.json()
                 if data.get('items'):
-                    # Tomar el primer resultado que coincida con el ISBN
+
                     item = data['items'][0]
                     volume_info = item.get('volumeInfo', {})
 
-                    # Crear un "libro virtual" con los mismos campos que el modelo Book
+                    # Create a book object with the fetched data
                     mybook = {
                         'ISBN': ISBN,
                         'title': volume_info.get('title', 'Unknown Title'),
@@ -384,17 +426,63 @@ def book_entry(request, ISBN):
                         'source': 'Google Books'
                     }
         except Exception as e:
-            print(f"Error fetching book from API: {e}")
+            pass  # Handle API errors silently
 
     if not mybook:
         messages.error(request, "Book not found in our database or external sources.")
         return redirect('books')
-
-    # Pasar a la plantilla tanto el libro como un indicador de si es local o externo, y las reviews
+    avg_rating = None
+    book_availability = None
+    book_condition = 'used'  # default
+    
+    if is_local and reviews.exists():
+        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+    
+    # Get availability info for schema.org markup
+    book_sellers = []
+    transaction_count = 0
+    if is_local:
+        from .models import Have, SaleDonation, Exchange
+        from collections import Counter
+        
+        # Get all Have instances for this book
+        have_instances = Have.objects.filter(book=mybook).select_related('user')
+        available_copies = have_instances.count()
+        
+        # Get transaction history for popularity metrics
+        sales_count = SaleDonation.objects.filter(book=mybook).count()
+        exchanges_count = Exchange.objects.filter(book1=mybook).count() + Exchange.objects.filter(book2=mybook).count()
+        transaction_count = sales_count + exchanges_count
+        
+        if available_copies > 0:
+            book_availability = 'http://schema.org/InStock'
+            # Get the most common condition
+            conditions = have_instances.values_list('status', flat=True)
+            if conditions:
+                most_common = Counter(conditions).most_common(1)
+                book_condition = most_common[0][0] if most_common else 'used'
+            
+            # Get sellers info for detailed markup
+            for have in have_instances[:3]:  # Limit to 3 for performance
+                book_sellers.append({
+                    'user': have.user,
+                    'status': have.status,
+                    'points': have.points,
+                    'date_added': have.user.joined_date 
+                })
+        else:
+            book_availability = 'http://schema.org/OutOfStock'
+    
     return render(request, 'book-entry.html', {
         'mybook': mybook,
         'is_local': is_local,
-        'reviews': reviews
+        'reviews': reviews,
+        'avg_rating': avg_rating,
+        'book_availability': book_availability,
+        'book_condition': book_condition,
+        'book_sellers': book_sellers,
+        'available_copies': len(book_sellers) if book_sellers else 0,
+        'transaction_count': transaction_count
     })
 
 def book_trade_view(request):
@@ -510,8 +598,7 @@ def sale_detail(request, ISBN):
                     selected_user.points += book.base_price
                     selected_user.save()
                 
-                # Seller (selected_user) gets the points, doesn't have book anymore
-
+                # Seller gets the points, doesn't have book anymore
                 Have.objects.filter(user=selected_user, book=book).delete()
 
                 # Create a SaleDonation object
@@ -524,15 +611,14 @@ def sale_detail(request, ISBN):
                 )
                 sale.save()
 
-                messages.success(request, "Has adquirit el llibre correctament.")
+                messages.success(request, "Book acquired successfully.")
                 return render(request, 'sale_success.html', context)
             else:
-                messages.error(request, "No tens prou punts per adquirir aquest llibre.")
+                messages.error(request, "You don't have enough points to acquire this book.")
                 return redirect('book-entry', ISBN=ISBN)
         
-           
         else:
-            messages.error(request, "No s'ha seleccionat cap usuari.")
+            messages.error(request, "No user selected.")
             
             
     
@@ -545,7 +631,7 @@ def get_book(request, offer_id):
     buyer = request.user
 
     if offer.status != 'pending':
-        messages.error(request, "Esta oferta ya ha sido gestionada.")
+        messages.error(request, "This offer has already been processed.")
         return redirect('home')
 
     if buyer.points >= offer.points:
@@ -560,9 +646,9 @@ def get_book(request, offer_id):
         offer.status = 'completed'
         offer.save()
 
-        messages.success(request, "Has adquirido el libro correctamente.")
+        messages.success(request, "Book acquired successfully.")
     else:
-        messages.error(request, "No tienes suficientes puntos para adquirir este libro.")
+        messages.error(request, "You don't have enough points to acquire this book.")
 
     return redirect('home')
 
@@ -575,10 +661,10 @@ def havelist_view(request):
 
 
 
-# Vista para crear una review
+# View to create a review
 class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
-    fields = ['text']
+    form_class = ReviewForm
     template_name = 'review_form.html'
 
     def form_valid(self, form):
@@ -621,7 +707,6 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
                             'title': volume_info.get('title', 'Unknown Title'),
                         }
             except Exception as e:
-                print(f"Error fetching book from API: {e}")
                 context['book'] = {'ISBN': isbn, 'title': 'Unknown Book'}
 
         context['action'] = 'Create'
@@ -631,10 +716,10 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy('book-entry', kwargs={'ISBN': self.kwargs['isbn']})
 
 
-# Vista para actualizar una review
+# View to update a review
 class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Review
-    fields = ['text']
+    form_class = ReviewForm
     template_name = 'review_form.html'
 
     def test_func(self):
@@ -651,7 +736,7 @@ class ReviewUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse_lazy('book-entry', kwargs={'ISBN': self.get_object().book.ISBN})
 
 
-# Vista para eliminar una review
+# View to delete a review
 class ReviewDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Review
     template_name = 'review_confirm_delete.html'
@@ -696,9 +781,6 @@ def trade_form(request, book_id):
     users = list(unique_users.values())
     
     all_have_objects = Have.objects.filter(book=book).select_related('user')
-    print(f"[DEBUG] Total Have objects for this book: {all_have_objects.count()}")
-    for have in all_have_objects:
-        print(f"[DEBUG] Have object: {have.user.name} (ID: {have.user.userId}) (is current user? {have.user.userId == current_user.userId})")
 
     context = {
         'users': users,
@@ -711,18 +793,15 @@ def trade_form(request, book_id):
         selected_user_id = request.POST.get('selected_user')
         selected_book_id = request.POST.get('selected_book')
         
-        print(f"[DEBUG] Selected user ID: {selected_user_id}, Selected book ID: {selected_book_id}")
-        
         if selected_user_id and not selected_book_id:
             try:
                 selected_user = get_object_or_404(User, userId=selected_user_id)
-                print(f"[DEBUG] Found selected user: {selected_user.name}")
                 
                 user_have_objects = Have.objects.filter(user=selected_user).select_related('book')
                 user_books = [have.book for have in user_have_objects]
                 
                 if not user_books:
-                    messages.warning(request, f"{selected_user.name} no té llibres disponibles per intercanviar.")
+                    messages.warning(request, f"{selected_user.name} has no books available for exchange.")
                 
                 context['selected_user_id'] = selected_user_id
                 context['user_books'] = user_books
@@ -731,22 +810,19 @@ def trade_form(request, book_id):
                 return render(request, 'trade_form.html', context)
             
             except Exception as e:
-                print(f"[DEBUG] Error loading user books: {str(e)}")
-                messages.error(request, f"Error en carregar els llibres de l'usuari: {str(e)}")
+                messages.error(request, f"Error loading user books: {str(e)}")
         
         elif selected_user_id and selected_book_id:
             try:
                 selected_user = get_object_or_404(User, userId=selected_user_id)
-                print(f"[DEBUG] Selected book ID: '{selected_book_id}'")
                 
                 try:
                     selected_book = Book.objects.get(ISBN=selected_book_id)
-                    print(f"[DEBUG] Found selected book: {selected_book.title}")
                     
                     with transaction.atomic():
                         # Create the exchange record
                         exchange = Exchange(
-                            user1=current_user,  # Current user
+                            user1=current_user,
                             user2=selected_user,
                             book1=book,
                             book2=selected_book,
@@ -792,18 +868,16 @@ def trade_form(request, book_id):
                             points=user1_points
                         )
                 except Book.DoesNotExist:
-                    print(f"[DEBUG] Book with ISBN {selected_book_id} not found")
                     messages.error(request, f"Book with ISBN {selected_book_id} not found.")
                     return redirect('book-trade')
                 
                 # Set success message for display
-                messages.success(request, f"Intercanvi confirmat amb {selected_user.name}! El teu llibre '{book.title}' per '{selected_book.title}'")
+                messages.success(request, f"Exchange confirmed with {selected_user.name}! Your book '{book.title}' for '{selected_book.title}'")
                 return redirect('trade_success_page')
             except Exception as e:
-                print(f"[DEBUG] Error processing exchange: {str(e)}")
-                messages.error(request, f"Error en processar l'intercanvi: {str(e)}")
+                messages.error(request, f"Error processing exchange: {str(e)}")
         else:
-            messages.error(request, "Has de seleccionar un usuari i un llibre per confirmar l'intercanvi.")
+            messages.error(request, "You must select a user and a book to confirm the exchange.")
 
     return render(request, 'trade_form.html', context)
 

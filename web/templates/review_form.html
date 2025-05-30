@@ -10,6 +10,18 @@
         {% csrf_token %}
 
         <div class="form-group">
+            <label for="id_rating">Rating:</label>
+            <div class="star-rating-container">
+                {{ form.rating }}
+                {% if form.rating.errors %}
+                    <div class="form-errors">
+                        {{ form.rating.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
             <label for="id_text">Your Review:</label>
             {{ form.text }}
             {% if form.text.errors %}
@@ -25,4 +37,6 @@
         </div>
     </form>
 </div>
+
+
 {% endblock %}

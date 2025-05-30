@@ -1,29 +1,150 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Trending Books - Library{% endblock %}
+
 {% block content %}
 <div class="trending-books">
     <h2>Popular Books</h2>
+    <p class="subtitle">Books that have been exchanged or sold most frequently</p>
 
-    <div class="book-card">
-        <img src="{% static 'img/libro1.jpg' %}" alt="Libro 1">
-        <h3>El Alquimista</h3>
-        <p>de Paulo Coelho</p>
-        <button>Exchange</button>
-    </div>
+    <div class="books-container">
+        {% if trending_books %}
+            {% for book in trending_books %}
+                <span vocab="https://schema.org/" typeof="Book">
+                    <div class="book-card">
+                        <!-- Cover image -->
+                        <div class="book-cover">
+                            <img rel="image" src="https://covers.openlibrary.org/b/isbn/{{ book.ISBN }}-L.jpg"
+                                alt="Cover of {{ book.title }}"
+                                onload="if(this.naturalWidth === 1 && this.naturalHeight === 1) fetchGoogleBooksCover(this, '{{ book.ISBN }}');"
+                                onerror="fetchGoogleBooksCover(this, '{{ book.ISBN }}');">
+                        </div>
+                        
+                        <a href="{% url 'book-entry' ISBN=book.ISBN %}">
+                            <h3>
+                                <span property="name">{{ book.title }}</span>
+                            </h3>
+                        </a>
+                        <p class="author">by 
+                            <span rel="author" typeof="Person">
+                                <span property="name">{{ book.author }}</span>
+                            </span>
+                        </p>
+                        <p class="book-details">
+                            <span property="genre" class="category">{{ book.topic }}</span>
+                        </p>
+                        <div rel="offers" typeof="Offer">
+                            <p class="price">
+                                <span property="price">{{ book.base_price }}</span>
+                                <meta property="priceCurrency" content="POINTS" />
+                                points
+                            </p>
+                        </div>
+                        
+                        <div class="card-bottom-container">
+                            <div class="book-footer">
+                                <span class="isbn">ISBN: <span property="isbn">{{ book.ISBN }}</span></span>
+                                <span class="popularity">
+                                    {% if book.total_count %}
+                                        <strong>Transactions: {{ book.total_count }}</strong>
+                                    {% endif %}
+                                    {% if book.exchange_count %}
+                                        <br><small>Exchanges: {{ book.exchange_count }}</small>
+                                    {% endif %}
+                                    {% if book.sale_count %}
+                                        <br><small>Sales: {{ book.sale_count }}</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="book-actions">
+                                <a href="{% url 'add_to_wishlist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author|urlencode }}" class="love-button" title="Want!">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart">
+                                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                                    </svg>
+                                </a>
 
-    <div class="book-card">
-        <img src="{% static 'img/libro2.jpg' %}" alt="Libro 2">
-        <h3>1984</h3>
-        <p>de George Orwell</p>
-        <button>Exchange</button>
-    </div>
-
-    <div class="book-card">
-        <img src="{% static 'img/libro3.jpg' %}" alt="Libro 3">
-        <h3>Cien Años de Soledad</h3>
-        <p>de Gabriel García Márquez</p>
-        <button>Exchange</button>
+                                <a href="{% url 'add_to_havelist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author|urlencode }}" class="have-button" title="I have it!">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-library-big-icon">
+                                        <rect width="8" height="18" x="3" y="3" rx="1"/>
+                                        <path d="M7 3v18"/>
+                                        <path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/>
+                                    </svg>
+                                </a>
+                                
+                                <a href="{% url 'trade_form' book_id=book.ISBN %}" class="exchange-button" title="Exchange">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat">
+                                        <path d="m17 2 4 4-4 4"></path>
+                                        <path d="M3 11v-1a4 4 0 0 1 4-4h14"></path>
+                                        <path d="m7 22-4-4 4-4"></path>
+                                        <path d="M21 13v1a4 4 0 0 1-4 4H3"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </span>
+            {% endfor %}
+        {% else %}
+            <div class="no-books-message">
+                <p>No books have been exchanged or sold yet. Check back later for trending books!</p>
+            </div>
+        {% endif %}
     </div>
 </div>
+
+{% endblock %}
+                    
+                    <div class="card-bottom-container">
+                        <div class="book-footer">
+                            <span class="isbn">ISBN: <span property="isbn">{{ book.ISBN }}</span></span>
+                            <span class="popularity">
+                                {% if book.total_count %}
+                                    <strong>Transactions: {{ book.total_count }}</strong>
+                                {% endif %}
+                                {% if book.exchange_count %}
+                                    <br><small>Exchanges: {{ book.exchange_count }}</small>
+                                {% endif %}
+                                {% if book.sale_count %}
+                                    <br><small>Sales: {{ book.sale_count }}</small>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="book-actions">
+                            <a href="{% url 'add_to_wishlist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author|urlencode }}" class="love-button" title="Want!">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart">
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                                </svg>
+                            </a>
+
+                            <a href="{% url 'add_to_havelist' %}?isbn={{ book.ISBN }}&title={{ book.title|urlencode }}&author={{ book.author|urlencode }}" class="have-button" title="I have it!">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-library-big-icon">
+                                    <rect width="8" height="18" x="3" y="3" rx="1"/>
+                                    <path d="M7 3v18"/>
+                                    <path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z"/>
+                                </svg>
+                            </a>
+                            
+                            <a href="{% url 'trade_form' book_id=book.ISBN %}" class="exchange-button" title="Exchange">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat">
+                                    <path d="m17 2 4 4-4 4"></path>
+                                    <path d="M3 11v-1a4 4 0 0 1 4-4h14"></path>
+                                    <path d="m7 22-4-4 4-4"></path>
+                                    <path d="M21 13v1a4 4 0 0 1-4 4H3"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-books-message">
+                <p>No books have been exchanged or sold yet. Check back later for trending books!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
 {% endblock %}
