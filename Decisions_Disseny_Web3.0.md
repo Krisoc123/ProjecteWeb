@@ -1,9 +1,12 @@
 # Decisions de Disseny per a la Implementació de Marcatge Semàntic Web 3.0
 
-## Introducció
+## 0. Enllaç al Repositori
+`https://github.com/Krisoc123/ProjecteWeb.git`
+
+## 1. Introducció
 La transformació de la nostra web (2.0) Django d'intercanvi de llibres cap a una aplicació Web 3.0 preten millorar la visibilitat en motors de cerca i proporcionar dades estructurades que facilitin la integració amb altres plataformes. El nostre sistema permet als usuaris intercanviar, vendre o donar llibres mitjançant un sistema de punts, i s'ha intentat afegir marcatge semàntic als atributs que representen les entitats ja existents en el model relacional.
 
-### Selecció del Vocabulari Schema.org
+### 1.1 Selecció del Vocabulari Schema.org
 
 Seguint els requisits de l'enunciat, s'ha utilitzat RDFa (Resource Description Framework in Attributes) amb el vocabulari schema.org per implementar el marcatge semàntic. Schema.org ofereix una estructura ben definida per a productes, ofertes comercials i ressenyes d'usuaris, que s'ajusta perfectament al domini de llibres. A més, aquest vocabulari és reconegut directament per Google, Bing i altres motors de cerca principals.
 
@@ -16,7 +19,7 @@ La implementació del marcatge es basa en una entitat principal `Product` amb el
 
 Això permet que els motors de cerca entenguin immediatament que estem descrivint un producte que específicament és un llibre, heretant totes les propietats tant de Product com de Book.
 
-### Filtres de Template Personalitzats
+### 1.2 Filtres de Template Personalitzats
 
 S'ha integrat el marcatge semàntic amb els models Django existents sense modificar massa codi ni estructura. S'ha creat un sistema de filtres de template personalitzats que converteixen entre les dades del model i els formats requerits per schema.org, localitzats a `templatetags/book_filters.py`. 
 
@@ -40,11 +43,11 @@ Altres filtres implementats inclouen:
 
 D'aquesta manera, no ha calgut modificar els models ni gairee les variables de context de les vistes.
 
-### Entitat Product: Propietats i Jerarquia
+### 1.3 Entitat Product: Propietats i Jerarquia
 
 S'ha decidit d'utilitzar `Product` com a entitat base amb `Book` com a especialització mitjançant `additionalType` es basa en l'herència de propietats de schema.org. Aquesta estructura permet combinar les propietats comercials de Product (ofertes, preus, ressenyes) amb les propietats específiques dels llibres (ISBN, autor, data de publicació).
 
-### Marcatge Semàntic de Product
+## 2. Marcatge Semàntic de Product
 
 Les propietats heretades de `Product` que s'utilitzen en la implementació:
 
@@ -66,7 +69,7 @@ Implementació del marcatge semàntic per a Product:
 </div>
 ```
 
-### Marcatge de *Book*
+### 2.1 Marcatge de *Book*
 
 Les propietats específiques de `Book` que s'afegeixen al marcatge inclouen informació bibliogràfica estàndard:
 
@@ -92,11 +95,11 @@ Com que la majoria de propietats ja es trobaven en el context de la vista ha est
 
 La propietat `productID` utilitza el format estàndard "isbn:" per identificar el llibre de manera única.
 
-### Sistema de Reviews: Agregats i Individuals
+## 3. Sistema de Reviews: Agregats i Individuals
 
 La implementació del sistema de ressenyes combina dos tipus d'entitats schema.org per oferir informació qualitativa completa sobre els llibres:
 
-### Review Individual
+### 3.1 Review Individual
 
 Cada ressenya individual utilitza l'entitat `Review` amb les següents propietats específiques:
 
@@ -130,7 +133,7 @@ Implementació del marcatge semàntic per a Review:
 </div>
 ```
 
-### AggregateRating per a Valoració Global
+### 3.2 AggregateRating per a Valoració Global
 
 L'entitat `AggregateRating` proporciona quantitativa calculada dinàmicament a partir de totes les reviews individuals. Aquesta entitat és especialment important per als motors de cerca, ja que permet capturar de manera fàcil la valoració mitjana d'un llibre i el nombre total de ressenyes.
 
@@ -163,7 +166,7 @@ Després, s'inclou en el marcatge semàntic de la pàgina del llibre:
 {% endif %}
 ```
 
-### Entitat Offer: Comerç i Disponibilitat
+## 4. Entitat Offer: Comerç i Disponibilitat
 
 L'entitat `Offer` gestiona la informació de venda i compra adaptada al sistema de punts de la plataforma. Cada llibre disponible té una oferta principal que inclou:
 
@@ -177,7 +180,7 @@ L'entitat `Offer` gestiona la informació de venda i compra adaptada al sistema 
 - `priceValidUntil`: Validesa de l'oferta, establerta per defecte a un any (per omplir amb les especificacions de schema.org)
 - `inventoryLevel`: Nombre exact de còpies disponibles
 
-### Implementació del Marcatge Offer
+### 4.1 Implementació del Marcatge Offer
 
 ```html
 <div property="offers" typeof="Offer">
@@ -198,7 +201,7 @@ L'entitat `Offer` gestiona la informació de venda i compra adaptada al sistema 
 </div>
 ```
 
-### Marcatge de Intercanvi
+### 4.2 Marcatge de Intercanvi
 
 Per representar les funcionalitats d'intercanvi que no tenen equivalent directe en schema.org, s'utilitzen entitats `PropertyValue` personalitzades:
 
@@ -212,7 +215,7 @@ Per representar les funcionalitats d'intercanvi que no tenen equivalent directe 
 {% endif %}
 ```
 
-### Indicadors de Popularitat
+### 4.3 Indicadors de Popularitat
 Mapeig amb Models Django:
 
 L'sistema d'intercanvi es basa en tres models principals:
@@ -235,7 +238,7 @@ S'utilitza la propietat `transactionCount` per indicar el nombre total d'interca
 {% endif %}
 ```
 
-## Interconexió d'Entitats Schema.org
+## 5. Interconexió d'Entitats Schema.org
 
 La implementació final crea com una especie deuna xarxa interconnectada d'entitats que reflecteix amb precisió el model de negoci de la plataforma d'intercanvi de llibres:
 
@@ -246,16 +249,16 @@ La implementació final crea com una especie deuna xarxa interconnectada d'entit
 
 6. **PropertyValue** elements personalitzats per a funcionalitats d'intercanvi
 
-## Els resultats del test de Google
+## 6. Els resultats del test de Google
 ![](https://i.imgur.com/XBmuZYa.png)
 
 - Bàsicament, el test de Google ha detectat Products i Reviews.
 
-## RDFa Play
+## 7. RDFa Play
 L'esquema obtingut a partir de l'RDFa Play per un llibre en concret és el següent:
 ![](https://i.imgur.com/zD8S7vr.png)
 
-## Resumint
+## 8. Resumint
 En aquesta entrega hem buscat totes les entitats que tinguessin alguna relació amb entitats de schema.org i hem intentat relacionar els atributs originals del model Django amb les propietats de schema.org. 
 
 També vam començar provant d'afegir marcatge a altres *templates* com ara el de `trending.html`, però vam veure que allà no s'hi mostraven la majoria de propietats que s'esperaven i per no es detectava al test de Google.
